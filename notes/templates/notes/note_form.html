@@ -1,0 +1,7 @@
+<h2>{% if form.instance.pk %}Edit Note{% else %}New Note{% endif %}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+<p><a href="{% url 'note_list' %}">Cancel</a></p>

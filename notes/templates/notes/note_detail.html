@@ -1,0 +1,7 @@
+<h2>{{ note.title }}</h2>
+<p>{{ note.content }}</p>
+
+<p><a href="{% url 'note_edit' note.pk %}">Edit</a> |
+    <a href="{% url 'note_delete' note.pk %}">Delete</a> |
+    <a href="{% url 'note_list' %}">Back to list</a>
+</p>
