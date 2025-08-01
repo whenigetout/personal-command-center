@@ -22,4 +22,5 @@ urlpatterns = [
     #my apps
     path('', include('notes.urls')),
     path('api/', include('mediahub.urls')),
+    path('', include('league_tracker.urls')),
 ]

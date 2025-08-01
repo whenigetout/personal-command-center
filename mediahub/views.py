@@ -7,8 +7,9 @@ from rest_framework import viewsets
 from .models import Video, Tag, Actress
 from .serializers import VideoSerializer, TagSerializer, ActressSerializer
 
-from django.http import FileResponse
+from django.http import FileResponse, StreamingHttpResponse, Http404
 from urllib.parse import unquote
+from wsgiref.util import FileWrapper
 
 import subprocess
 import tempfile
@@ -53,15 +54,45 @@ def delete_all_videos(request):
 
 @api_view(['GET'])
 def stream_video(request):
-    raw_path = request.query_params.get('path')
-    if not raw_path:
-        return Response({'error': 'Missing file path'}, status=400)
+    from urllib.parse import unquote
+    file_path = unquote(request.GET.get('path', ''))
+    
+    if not os.path.exists(file_path):
+        raise Http404()
 
-    path = unquote(raw_path)
-    try:
-        return FileResponse(open(path, 'rb'), content_type='video/mp4')
-    except FileNotFoundError:
-        return Response({'error': 'File not found'}, status=404)
+    file_size = os.path.getsize(file_path)
+    range_header = request.headers.get('Range', '').strip()
+    
+    content_type = 'video/mp4'  # adjust based on file extension if needed
+
+    if range_header:
+        # Parse bytes=START-END
+        range_match = range_header.replace('bytes=', '').split('-')
+        start = int(range_match[0])
+        end = int(range_match[1]) if range_match[1] else file_size - 1
+        length = end - start + 1
+
+        def file_iterator(path, start, length):
+            with open(path, 'rb') as f:
+                f.seek(start)
+                yield f.read(length)
+
+        response = StreamingHttpResponse(
+            file_iterator(file_path, start, length),
+            status=206,
+            content_type=content_type
+        )
+        response['Content-Range'] = f'bytes {start}-{end}/{file_size}'
+        response['Content-Length'] = str(length)
+        response['Accept-Ranges'] = 'bytes'
+        return response
+
+    # No Range header: serve entire file
+    wrapper = FileWrapper(open(file_path, 'rb'))
+    response = StreamingHttpResponse(wrapper, content_type=content_type)
+    response['Content-Length'] = str(file_size)
+    response['Accept-Ranges'] = 'bytes'
+    return response
     
 @api_view(['GET'])
 def generate_thumbnail(request):

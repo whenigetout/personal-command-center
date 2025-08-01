@@ -144,8 +144,7 @@ function DeleteAllButton({ onDelete }: { onDelete: () => void }) {
 
 export default function MediaHubPage() {
     const [videos, setVideos] = useState<Video[]>([]);
-    const [showingVideoId, setShowingVideoId] = useState<number | null>(null);
-
+    const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
     const refresh = () => {
         fetch('http://localhost:8000/api/videos/')
@@ -153,7 +152,16 @@ export default function MediaHubPage() {
             .then(data => setVideos(data));
     };
 
-    useEffect(refresh, []);
+    useEffect(() => {
+        fetch('http://localhost:8000/api/videos/')
+            .then(res => res.json())
+            .then(data => {
+                setVideos(data);
+                if (data.length > 0) {
+                    setSelectedVideo(data[0]); // Show first video by default
+                }
+            });
+    }, []);
 
     return (
         <div className="p-6">
@@ -165,46 +173,48 @@ export default function MediaHubPage() {
             {videos.length === 0 ? (
                 <p className="text-gray-500">No videos found.</p>
             ) : (
-                <ul className="space-y-6">
-                    {videos.map(video => (
-                        <li key={video.id} className="border rounded p-4 shadow">
-                            <h2 className="text-xl font-semibold">{video.title}</h2>
-                            <p className="text-sm text-gray-500">{video.file_path}</p>
-                            <p className="mt-2">
-                                <strong>Tags:</strong> {video.tags.map(t => t.name).join(', ') || 'None'}
-                            </p>
-                            <p>
-                                <strong>Actresses:</strong> {video.actresses.map(a => a.name).join(', ') || 'None'}
-                            </p>
-                            {/* For real video previews later, we'll replace this */}
-                            <div
-                                className="w-[300px] h-[170px] relative overflow-hidden rounded-lg shadow transition-all duration-300"
-                            >
-                                {showingVideoId === video.id ? (
-                                    <video
-                                        key={video.id} // force remount so autoplay works
-                                        width="300"
-                                        height="170"
-                                        controls
-                                        autoPlay
-                                        className="absolute top-0 left-0 w-full h-full object-cover animate-fade-in"
-                                        src={`http://localhost:8000/api/stream/?path=${encodeURIComponent(video.file_path)}`}
-                                    />
-                                ) : (
-                                    <img
-                                        key={`thumb-${video.id}`}
-                                        src={`http://localhost:8000/api/thumbnail/?path=${encodeURIComponent(video.file_path)}`}
-                                        alt="Thumbnail"
-                                        className="cursor-pointer absolute top-0 left-0 w-full h-full object-cover hover:brightness-90 transition duration-200"
-                                        onClick={() => setShowingVideoId(video.id)}
-                                    />
-                                )}
+                <div className="flex gap-6">
+                    {/* Main Player */}
+                    <div className="flex-1">
+                        {selectedVideo && (
+                            <div className="border rounded p-4 shadow">
+                                <h2 className="text-xl font-semibold">{selectedVideo.title}</h2>
+                                <p className="text-sm text-gray-500">{selectedVideo.file_path}</p>
+                                <p className="mt-2">
+                                    <strong>Tags:</strong> {selectedVideo.tags.map(t => t.name).join(', ') || 'None'}
+                                </p>
+                                <p>
+                                    <strong>Actresses:</strong> {selectedVideo.actresses.map(a => a.name).join(', ') || 'None'}
+                                </p>
+                                <VideoCard
+                                    src={`http://localhost:8000/api/stream/?path=${encodeURIComponent(selectedVideo.file_path)}`}
+                                    thumb={`http://localhost:8000/api/thumbnail/?path=${encodeURIComponent(selectedVideo.file_path)}`}
+                                />
                             </div>
+                        )}
+                    </div>
 
+                    {/* Sidebar Thumbnails */}
+                    <div className="w-[300px] space-y-4 overflow-y-auto max-h-[80vh]">
+                        {videos.map(video => (
+                            <div
+                                key={video.id}
+                                className={`border p-2 rounded cursor-pointer hover:bg-gray-800 transition ${selectedVideo?.id === video.id ? 'bg-gray-900' : ''
+                                    }`}
+                                onClick={() => setSelectedVideo(video)}
+                            >
+                                <h3 className="text-md font-semibold truncate">{video.title}</h3>
+                                <VideoCard
+                                    src={`http://localhost:8000/api/stream/?path=${encodeURIComponent(video.file_path)}`}
+                                    thumb={`http://localhost:8000/api/thumbnail/?path=${encodeURIComponent(video.file_path)}`}
+                                    minimal
+                                />
 
-                        </li>
-                    ))}
-                </ul>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
             )}
         </div>
     );

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #my apps
     'notes',
     'mediahub',
+    'league_tracker'
 ]
 
 INSTALLED_APPS += ['rest_framework']

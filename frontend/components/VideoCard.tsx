@@ -1,50 +1,58 @@
-'use client'
+'use client';
+import { useRef, useState, useEffect } from 'react';
 
-import { useState } from 'react'
-
-type VideoProps = {
-    id: number
-    name: string
-    filepath: string
-    tags: string[]
-    actresses: string[]
+interface VideoCardProps {
+    src: string;
+    thumb: string;
+    minimal?: boolean; // ✅ new optional prop
+    onClick?: () => void; // ✅ allow click handler to be passed
 }
 
-export default function VideoCard({ video }: { video: VideoProps }) {
-    const [isHovered, setIsHovered] = useState(false)
+export default function VideoCard({ src, thumb, minimal = false, onClick }: VideoCardProps) {
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
-    const thumbnailUrl = `/api/thumbnail/?path=${encodeURIComponent(video.filepath)}`
-    const videoUrl = `/api/stream/?path=${encodeURIComponent(video.filepath)}`
+    const togglePlayback = () => {
+        if (!videoRef.current) return;
+        if (videoRef.current.paused) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        } else {
+            videoRef.current.pause();
+            setIsPlaying(false);
+        }
+    };
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.focus();
+        }
+    }, []);
 
     return (
         <div
-            className="bg-zinc-900 rounded-lg overflow-hidden shadow hover:shadow-xl transition-all w-full max-w-xs"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            ref={containerRef}
+            className="relative w-[320px] cursor-pointer"
+            onClick={minimal ? onClick : togglePlayback}
         >
-            <div className="aspect-video w-full">
-                {isHovered ? (
-                    <video
-                        src={videoUrl}
-                        controls
-                        autoPlay
-                        muted
-                        loop
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <img
-                        src={thumbnailUrl}
-                        alt={video.name}
-                        className="w-full h-full object-cover"
-                    />
-                )}
-            </div>
-            <div className="p-3">
-                <h2 className="text-sm font-semibold line-clamp-2">{video.name}</h2>
-                <p className="text-xs text-zinc-400">Tags: {video.tags.join(', ') || 'None'}</p>
-                <p className="text-xs text-zinc-400">Actresses: {video.actresses.join(', ') || 'None'}</p>
-            </div>
+            {minimal ? (
+                <img
+                    src={thumb}
+                    alt="Video thumbnail"
+                    className="w-full rounded-md border"
+                />
+            ) : (
+                <video
+                    ref={videoRef}
+                    src={src}
+                    poster={thumb}
+                    className="w-full rounded-md border"
+                    controls
+                    tabIndex={0}
+                    onClick={(e) => e.stopPropagation()}
+                />
+            )}
         </div>
-    )
+    );
 }
