@@ -29,7 +29,14 @@ export default function ImagePanel({ group }: Props) {
     const [expandedImage, setExpandedImage] = useState(false)
     const [expandedDialogues, setExpandedDialogues] = useState<Set<number>>(new Set())
     const [batchLoading, setBatchLoading] = useState(false)
+    // const dialogueRefs = useRef<Array<DialogueLineRef | null>>([]);
+    // const dialogueRefs = useRef<any[]>([]);
     const dialogueRefs = useRef<Array<DialogueLineRef | null>>([]);
+
+
+    const setDialogueRef = (idx: number) => (el: DialogueLineRef | null) => {
+        dialogueRefs.current[idx] = el;
+    };
 
 
     const toggleDialogue = (id: number) => {
@@ -80,7 +87,7 @@ export default function ImagePanel({ group }: Props) {
                 {group.parsed_dialogue.map((dialogue, idx) => (
                     <DialogueLine
                         key={dialogue.id}
-                        ref={el => dialogueRefs.current[idx] = el}
+                        ref={setDialogueRef(idx)}
                         dialogue={dialogue}
                         expanded={expandedDialogues.has(dialogue.id)}
                         toggleExpanded={() => toggleDialogue(dialogue.id)}

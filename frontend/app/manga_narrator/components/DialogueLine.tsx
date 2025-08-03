@@ -1,5 +1,5 @@
-import React, { forwardRef } from 'react'
-import TtsLine from './TtsLine'
+import React, { forwardRef, useRef, useImperativeHandle } from 'react';
+import TtsLine from './TtsLine';
 
 interface DialogueEntry {
     id: number
@@ -27,6 +27,18 @@ const DialogueLine = forwardRef<DialogueLineRef, Props>(function DialogueLine(
     { dialogue, expanded, toggleExpanded, run_id },
     ref
 ) {
+    // Make a ref to TtsLine
+    const ttsLineRef = useRef<any>(null);
+
+    // Expose triggerTTS from TtsLine
+    useImperativeHandle(ref, () => ({
+        triggerTTS: async () => {
+            if (ttsLineRef.current?.triggerTTS) {
+                await ttsLineRef.current.triggerTTS();
+            }
+        }
+    }), []);
+
     return (
         <div className="border border-gray-500 p-3 rounded bg-gray-800">
             <div className="flex justify-between items-center">
@@ -52,15 +64,15 @@ const DialogueLine = forwardRef<DialogueLineRef, Props>(function DialogueLine(
                 </button>
                 <div className="ml-6 w-96">
                     <TtsLine
-                        ref={ref}
+                        ref={ttsLineRef}
                         run_id={run_id}
                         dialogue={dialogue}
-                        speakerId={dialogue.speaker} />
+                        speakerId={dialogue.speaker}
+                    />
                 </div>
-
             </div>
         </div>
-    )
+    );
 });
 
-export default DialogueLine
+export default DialogueLine;
