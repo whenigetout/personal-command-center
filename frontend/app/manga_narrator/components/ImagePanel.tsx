@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import DialogueLine from './DialogueLine'
+import DialogueLine, { DialogueLineRef } from './DialogueLine'
 
 interface DialogueEntry {
     id: number
@@ -28,7 +28,9 @@ interface Props {
 export default function ImagePanel({ group }: Props) {
     const [expandedImage, setExpandedImage] = useState(false)
     const [expandedDialogues, setExpandedDialogues] = useState<Set<number>>(new Set())
-    const dialogueRefs = useRef<Array<any>>([]) // Store refs for all DialogueLine
+    const [batchLoading, setBatchLoading] = useState(false)
+    const dialogueRefs = useRef<Array<DialogueLineRef | null>>([]);
+
 
     const toggleDialogue = (id: number) => {
         const next = new Set(expandedDialogues)
@@ -37,12 +39,21 @@ export default function ImagePanel({ group }: Props) {
     }
 
     const generateAllTtsForImage = async () => {
-        for (let i = 0; i < group.parsed_dialogue.length; i++) {
-            await dialogueRefs.current[i]?.triggerTTS?.()
-            // Optionally: await new Promise(res => setTimeout(res, 50));
+        setBatchLoading(true)
+        try {
+            for (let i = 0; i < group.parsed_dialogue.length; i++) {
+                await dialogueRefs.current[i]?.triggerTTS?.()
+            }
+            // alert is optional
+            // alert("Batch TTS for this image DONE!")
+        } catch (err) {
+            // alert("Batch TTS failed! See console.")
+            console.error(err)
+        } finally {
+            setBatchLoading(false)
         }
-        alert("Batch TTS for this image DONE!")
     }
+
 
     return (
         <div className="border border-gray-600 rounded">
@@ -56,15 +67,14 @@ export default function ImagePanel({ group }: Props) {
                 </button>
             </div>
 
-            <div className="flex justify-end">
-                <button
-                    onClick={generateAllTtsForImage}
-                    className="bg-purple-600 text-white px-3 py-1 rounded mb-2"
-                >
-                    🗣️ Generate All TTS (This Image)
-                </button>
-            </div>
-
+            <button
+                onClick={generateAllTtsForImage}
+                disabled={batchLoading}
+                className="bg-purple-600 text-white px-3 py-1 rounded mb-2
+        disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
+            >
+                {batchLoading ? "🗣️ Generating..." : "🗣️ Generate All TTS (This Image)"}
+            </button>
 
             <div className="p-4 space-y-2">
                 {group.parsed_dialogue.map((dialogue, idx) => (

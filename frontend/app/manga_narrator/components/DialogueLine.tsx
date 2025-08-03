@@ -19,7 +19,14 @@ interface Props {
     run_id: string
 }
 
-const DialogueLine = forwardRef(function DialogueLine({ dialogue, expanded, toggleExpanded, run_id }: Props, ref) {
+export interface DialogueLineRef {
+    triggerTTS: () => Promise<void>
+}
+
+const DialogueLine = forwardRef<DialogueLineRef, Props>(function DialogueLine(
+    { dialogue, expanded, toggleExpanded, run_id },
+    ref
+) {
     return (
         <div className="border border-gray-500 p-3 rounded bg-gray-800">
             <div className="flex justify-between items-center">
