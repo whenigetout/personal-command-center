@@ -35,6 +35,14 @@ export default function ImagePanel({ group }: Props) {
         setExpandedDialogues(next)
     }
 
+    const generateAllTtsForImage = async () => {
+        for (const dialogue of group.parsed_dialogue) {
+            // Call TTS API here
+        }
+        alert("Batch TTS for this image DONE!")
+    }
+
+
     return (
         <div className="border border-gray-600 rounded">
             <div className="bg-gray-700 px-4 py-2 flex justify-between items-center">
@@ -46,6 +54,16 @@ export default function ImagePanel({ group }: Props) {
                     {expandedImage ? 'Collapse' : 'Expand'}
                 </button>
             </div>
+
+            <div className="flex justify-end">
+                <button
+                    onClick={generateAllTtsForImage}
+                    className="bg-purple-600 text-white px-3 py-1 rounded mb-2"
+                >
+                    🗣️ Generate All TTS (This Image)
+                </button>
+            </div>
+
 
             <div className="p-4 space-y-2">
                 {group.parsed_dialogue.map(dialogue => (
