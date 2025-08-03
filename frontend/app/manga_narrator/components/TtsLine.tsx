@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { triggerTtsApi, TtsPayload } from '../utils/ttsAPI'
 
 interface Props {
     run_id: string
@@ -63,9 +64,10 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
         fetchAudioInfo()
     }, [run_id, dialogue.id])
 
+
     const triggerTTS = async () => {
-        setLoading(true)
-        const payload = {
+        setLoading(true);
+        const payload: TtsPayload = {
             text: dialogue.text,
             gender: dialogue.gender,
             emotion: dialogue.emotion,
@@ -77,25 +79,23 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
             use_custom_params: useCustom,
             exaggeration: useCustom ? parseFloat(exaggeration) : undefined,
             cfg: useCustom ? parseFloat(cfg) : undefined
-        }
+        };
 
         try {
-            const res = await fetch(`${TTS_API_ROOT}/tts/dialogue`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-            const result = await res.json()
+            const result = await triggerTtsApi(payload);
             if (result.status === "success") {
-                await fetchAudioInfo()
+                await fetchAudioInfo();
             } else {
-                alert("TTS error: " + result.message)
+                alert("TTS error: " + result.message);
             }
         } catch (err) {
-            console.error("TTS generation failed:", err)
+            console.error("TTS generation failed:", err);
         }
-        setLoading(false)
+        finally {
+            setLoading(false);
+        }
     }
+
 
     return (
         <div className="border border-purple-600 rounded mt-2 p-2 bg-gray-900">
@@ -105,19 +105,19 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
                     <audio src={audioUrl} controls className="my-2 w-full" />
                     <button
                         onClick={triggerTTS}
-                        className="bg-purple-700 text-white text-xs px-2 py-1 rounded hover:bg-purple-800"
+                        className="bg-purple-700 text-white text-xs px-2 py-1 rounded hover:bg-purple-800 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
                         disabled={loading}
                     >
-                        🔁 Regenerate
+                        {loading ? "🔃 Regenerating..." : "🔁 Regenerate"}
                     </button>
                 </>
             ) : (
                 <button
                     onClick={triggerTTS}
-                    className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700"
+                    className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
                     disabled={loading}
                 >
-                    🎙️ Generate
+                    {loading ? "🔃 Generating..." : "🎙️ Generate"}
                 </button>
             )}
 
