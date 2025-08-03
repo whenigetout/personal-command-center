@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import TtsLine from './TtsLine'
 
 interface DialogueEntry {
@@ -19,7 +19,7 @@ interface Props {
     run_id: string
 }
 
-export default function DialogueLine({ dialogue, expanded, toggleExpanded, run_id }: Props) {
+const DialogueLine = forwardRef(function DialogueLine({ dialogue, expanded, toggleExpanded, run_id }: Props, ref) {
     return (
         <div className="border border-gray-500 p-3 rounded bg-gray-800">
             <div className="flex justify-between items-center">
@@ -44,10 +44,16 @@ export default function DialogueLine({ dialogue, expanded, toggleExpanded, run_i
                     {expanded ? 'Hide Info' : 'Show Info'}
                 </button>
                 <div className="ml-6 w-96">
-                    <TtsLine run_id={run_id} dialogue={dialogue} speakerId={dialogue.speaker} />
+                    <TtsLine
+                        ref={ref}
+                        run_id={run_id}
+                        dialogue={dialogue}
+                        speakerId={dialogue.speaker} />
                 </div>
 
             </div>
         </div>
     )
-}
+});
+
+export default DialogueLine

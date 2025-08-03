@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 import { triggerTtsApi, TtsPayload } from '../utils/ttsAPI'
 
 interface Props {
@@ -18,7 +18,7 @@ interface Props {
 const DJANGO_API_ROOT = process.env.NEXT_PUBLIC_BACKEND_API as string
 const TTS_API_ROOT = process.env.NEXT_PUBLIC_TTS_API as string
 
-export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
+const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId }: Props, ref) {
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
     const [version, setVersion] = useState<number | null>(null)
     const [cfg, setCfg] = useState("")
@@ -28,6 +28,10 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
 
     const imageNameBase = dialogue.image_file_name.split('/').pop()?.replace('.', '_')
     const audioFolder = `${run_id}/${dialogue.image_rel_path_from_root}/${imageNameBase}/dialogue__${dialogue.id}`
+
+    useImperativeHandle(ref, () => ({
+        triggerTTS,
+    }));
 
 
     const fetchAudioInfo = async () => {
@@ -140,4 +144,6 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
             </div>
         </div>
     )
-}
+});
+
+export default TtsLine

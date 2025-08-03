@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import DialogueLine from './DialogueLine'
 
 interface DialogueEntry {
@@ -28,6 +28,7 @@ interface Props {
 export default function ImagePanel({ group }: Props) {
     const [expandedImage, setExpandedImage] = useState(false)
     const [expandedDialogues, setExpandedDialogues] = useState<Set<number>>(new Set())
+    const dialogueRefs = useRef<Array<any>>([]) // Store refs for all DialogueLine
 
     const toggleDialogue = (id: number) => {
         const next = new Set(expandedDialogues)
@@ -36,12 +37,12 @@ export default function ImagePanel({ group }: Props) {
     }
 
     const generateAllTtsForImage = async () => {
-        for (const dialogue of group.parsed_dialogue) {
-            // Call TTS API here
+        for (let i = 0; i < group.parsed_dialogue.length; i++) {
+            await dialogueRefs.current[i]?.triggerTTS?.()
+            // Optionally: await new Promise(res => setTimeout(res, 50));
         }
         alert("Batch TTS for this image DONE!")
     }
-
 
     return (
         <div className="border border-gray-600 rounded">
@@ -66,9 +67,10 @@ export default function ImagePanel({ group }: Props) {
 
 
             <div className="p-4 space-y-2">
-                {group.parsed_dialogue.map(dialogue => (
+                {group.parsed_dialogue.map((dialogue, idx) => (
                     <DialogueLine
                         key={dialogue.id}
+                        ref={el => dialogueRefs.current[idx] = el}
                         dialogue={dialogue}
                         expanded={expandedDialogues.has(dialogue.id)}
                         toggleExpanded={() => toggleDialogue(dialogue.id)}
