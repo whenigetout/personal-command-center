@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     #my apps
     'notes',
     'mediahub',
-    'league_tracker'
+    'league_tracker',
+    'manga_narrator',
 ]
 
 INSTALLED_APPS += ['rest_framework']
@@ -137,3 +139,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = 'E:/pcc_shared/manga_narrator_runs'
+MANGA_RUNS_DIR = os.environ.get("MANGA_RUNS_DIR", "E:/pcc_shared/manga_narrator_runs")
+MANGA_INPUTS_DIR = "E:/PCC_SHARED/MANGA_NARRATOR_RUNS/inputs"
+MANGA_OUTPUTS_DIR = "E:/PCC_SHARED/MANGA_NARRATOR_RUNS/outputs"
+MANGA_INPUTS_DIR = os.path.join(MANGA_RUNS_DIR, "inputs")
