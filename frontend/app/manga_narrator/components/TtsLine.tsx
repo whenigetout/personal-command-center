@@ -43,15 +43,17 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId }: Pro
             const data = await response.json()
 
 
+            console.log("==========================================================");
             console.log(data);
 
 
             if (data?.url) {
                 setAudioUrl(data.url)
-                setVersion(parseInt(data.file_name.match(/v(\d+)/)?.[1] || "0", 10))
+                const file_name = data.latest
+                setVersion(parseInt(file_name.match(/v(\d+)/)?.[1] || "0", 10))
 
-                const exgMatch = data.file_name.match(/exg([\d.]+)/)
-                const cfgMatch = data.file_name.match(/cfg([\d.]+)/)
+                const exgMatch = file_name.match(/exg([\d.]+)/)
+                const cfgMatch = file_name.match(/cfg([\d.]+)/)
 
                 setExaggeration(exgMatch?.[1] || "")
                 setCfg(cfgMatch?.[1] || "")
