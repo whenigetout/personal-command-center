@@ -17,6 +17,8 @@ interface Props {
     expanded: boolean
     toggleExpanded: () => void
     run_id: string
+    isGenerating: boolean
+    setIsGenerating: (val: boolean) => void
 }
 
 export interface DialogueLineRef {
@@ -24,7 +26,7 @@ export interface DialogueLineRef {
 }
 
 const DialogueLine = forwardRef<DialogueLineRef, Props>(function DialogueLine(
-    { dialogue, expanded, toggleExpanded, run_id },
+    { dialogue, expanded, toggleExpanded, run_id, isGenerating, setIsGenerating },
     ref
 ) {
     // Make a ref to TtsLine
@@ -68,6 +70,8 @@ const DialogueLine = forwardRef<DialogueLineRef, Props>(function DialogueLine(
                         run_id={run_id}
                         dialogue={dialogue}
                         speakerId={dialogue.speaker}
+                        isGenerating={isGenerating}
+                        setIsGenerating={setIsGenerating}
                     />
                 </div>
             </div>

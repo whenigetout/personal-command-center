@@ -26,15 +26,26 @@ interface Props {
 }
 
 export default function OcrPreview({ data }: Props) {
+
+    // GLOBAL: Is *anything* generating?
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     // Helper: batch trigger all TTS
     const generateAllTtsAllImages = async () => {
-        for (const group of data) {
-            for (const dialogue of group.parsed_dialogue) {
-                // Call your TTS API here. If you want to reuse TtsLine logic, extract triggerTTS into a util.
-                // Or emit an event/callback down to TtsLine to trigger it.
+        setIsGenerating(true)
+        await sleep(1000); // Wait 2 seconds before starting batch
+        try {
+            for (const group of data) {
+                for (const dialogue of group.parsed_dialogue) {
+                    // Your TTS trigger logic here
+                }
             }
+            alert("Batch TTS for all images DONE!")
+        } finally {
+            setIsGenerating(false)
         }
-        alert("Batch TTS for all images DONE!")
     }
 
     return (
@@ -42,13 +53,13 @@ export default function OcrPreview({ data }: Props) {
             <div className="flex justify-end">
                 <button
                     onClick={generateAllTtsAllImages}
-                    className="bg-purple-700 text-white px-4 py-2 rounded mb-3"
+                    className="bg-purple-700 text-white px-4 py-2 rounded mb-3 disabled={isGenerating}"
                 >
-                    🗣️ Generate All TTS (All Images)
+                    {isGenerating ? "🔃 Generating... Please Wait" : "🎙️ Generate All TTS (All Images)"}
                 </button>
             </div>
             {data.map(group => (
-                <ImagePanel key={group.image_id} group={group} />
+                <ImagePanel key={group.image_id} group={group} isGenerating={isGenerating} setIsGenerating={setIsGenerating} />
             ))}
         </div>
     )

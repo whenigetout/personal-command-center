@@ -23,9 +23,11 @@ interface ImageGroup {
 
 interface Props {
     group: ImageGroup
+    isGenerating: boolean
+    setIsGenerating: (x: boolean) => void
 }
 
-export default function ImagePanel({ group }: Props) {
+export default function ImagePanel({ group, isGenerating, setIsGenerating }: Props) {
     const [expandedImage, setExpandedImage] = useState(false)
     const [expandedDialogues, setExpandedDialogues] = useState<Set<number>>(new Set())
     const [batchLoading, setBatchLoading] = useState(false)
@@ -47,6 +49,7 @@ export default function ImagePanel({ group }: Props) {
 
     const generateAllTtsForImage = async () => {
         setBatchLoading(true)
+        setIsGenerating(true)
         try {
             for (let i = 0; i < group.parsed_dialogue.length; i++) {
                 await dialogueRefs.current[i]?.triggerTTS?.()
@@ -58,6 +61,7 @@ export default function ImagePanel({ group }: Props) {
             console.error(err)
         } finally {
             setBatchLoading(false)
+            setIsGenerating(false)
         }
     }
 
@@ -76,7 +80,7 @@ export default function ImagePanel({ group }: Props) {
 
             <button
                 onClick={generateAllTtsForImage}
-                disabled={batchLoading}
+                disabled={batchLoading || isGenerating}
                 className="bg-purple-600 text-white px-3 py-1 rounded mb-2
         disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
             >
@@ -92,6 +96,8 @@ export default function ImagePanel({ group }: Props) {
                         expanded={expandedDialogues.has(dialogue.id)}
                         toggleExpanded={() => toggleDialogue(dialogue.id)}
                         run_id={group.run_id}
+                        isGenerating={isGenerating}
+                        setIsGenerating={setIsGenerating}
                     />
                 ))}
 

@@ -13,12 +13,14 @@ interface Props {
         speaker: string
     }
     speakerId: string
+    isGenerating: boolean
+    setIsGenerating: (val: boolean) => void
 }
 
 const DJANGO_API_ROOT = process.env.NEXT_PUBLIC_BACKEND_API as string
 const TTS_API_ROOT = process.env.NEXT_PUBLIC_TTS_API as string
 
-const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId }: Props, ref) {
+const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGenerating, setIsGenerating }: Props, ref) {
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
     const [version, setVersion] = useState<number | null>(null)
     const [cfg, setCfg] = useState("")
@@ -112,7 +114,7 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId }: Pro
                     <button
                         onClick={triggerTTS}
                         className="bg-purple-700 text-white text-xs px-2 py-1 rounded hover:bg-purple-800 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
-                        disabled={loading}
+                        disabled={loading || isGenerating}
                     >
                         {loading ? "🔃 Regenerating..." : "🔁 Regenerate"}
                     </button>
@@ -121,26 +123,26 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId }: Pro
                 <button
                     onClick={triggerTTS}
                     className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
-                    disabled={loading}
+                    disabled={loading || isGenerating}
                 >
                     {loading ? "🔃 Generating..." : "🎙️ Generate"}
                 </button>
             )}
 
             <div className="mt-2 flex items-center gap-3 text-xs text-gray-300">
-                <label><input type="checkbox" checked={useCustom} onChange={() => setUseCustom(!useCustom)} /> Use custom cfg/exg</label>
+                <label><input type="checkbox" checked={useCustom} disabled={isGenerating} onChange={() => setUseCustom(!useCustom)} /> Use custom cfg/exg</label>
                 <input
                     value={cfg}
                     onChange={e => setCfg(e.target.value)}
                     placeholder="cfg"
-                    disabled={!useCustom}
+                    disabled={!useCustom || isGenerating}
                     className="bg-gray-800 text-white px-1 w-16 rounded"
                 />
                 <input
                     value={exaggeration}
                     onChange={e => setExaggeration(e.target.value)}
                     placeholder="exg"
-                    disabled={!useCustom}
+                    disabled={!useCustom || isGenerating}
                     className="bg-gray-800 text-white px-1 w-16 rounded"
                 />
             </div>
