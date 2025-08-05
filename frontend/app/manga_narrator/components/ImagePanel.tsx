@@ -23,8 +23,18 @@ interface ImageGroup {
 
 interface Props {
     group: ImageGroup
+    imageIdx: number
     isGenerating: boolean
     setIsGenerating: (x: boolean) => void
+    handleDialogueEdit: (
+        imageIdx: number,
+        dialogueIdx: number,
+        updates: Partial<DialogueEntry>
+    ) => void
+    handleDialogueDelete: (
+        imageIdx: number,
+        dialogueIdx: number
+    ) => void
 }
 
 export interface ImagePanelRef {
@@ -32,7 +42,7 @@ export interface ImagePanelRef {
 }
 
 
-const ImagePanel = forwardRef<ImagePanelRef, Props>(function ImagePanel({ group, isGenerating, setIsGenerating }, ref) {
+const ImagePanel = forwardRef<ImagePanelRef, Props>(function ImagePanel({ group, imageIdx, isGenerating, setIsGenerating, handleDialogueEdit, handleDialogueDelete }, ref) {
     const [expandedImage, setExpandedImage] = useState(false)
     const [expandedDialogues, setExpandedDialogues] = useState<Set<number>>(new Set())
     const [batchLoading, setBatchLoading] = useState(false)
@@ -103,6 +113,10 @@ const ImagePanel = forwardRef<ImagePanelRef, Props>(function ImagePanel({ group,
                         key={dialogue.id}
                         ref={setDialogueRef(idx)}
                         dialogue={dialogue}
+                        dialogueIdx={idx}                      // NEW
+                        imageIdx={imageIdx}                    // NEW
+                        handleDialogueEdit={handleDialogueEdit} // NEW
+                        handleDialogueDelete={handleDialogueDelete}
                         expanded={expandedDialogues.has(dialogue.id)}
                         toggleExpanded={() => toggleDialogue(dialogue.id)}
                         run_id={group.run_id}

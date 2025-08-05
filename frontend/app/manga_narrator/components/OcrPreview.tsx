@@ -30,6 +30,7 @@ export default function OcrPreview({ data }: Props) {
     // GLOBAL: Is *anything* generating?
     const [isGenerating, setIsGenerating] = useState(false);
     const imagePanelRefs = useRef<(ImagePanelRef | null)[]>([]);
+    const [ocrData, setOcrData] = useState<ImageGroup[]>(data);
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -47,6 +48,31 @@ export default function OcrPreview({ data }: Props) {
         }
     }
 
+    function handleDialogueEdit(imageIdx: number, dialogueIdx: number, updates: Partial<DialogueEntry>) {
+        setOcrData(prev => {
+            const updated = [...prev];
+            const group = { ...updated[imageIdx] };
+            const dialogues = [...group.parsed_dialogue];
+            dialogues[dialogueIdx] = { ...dialogues[dialogueIdx], ...updates };
+            group.parsed_dialogue = dialogues;
+            updated[imageIdx] = group;
+            return updated;
+        });
+    }
+
+    function handleDialogueDelete(imageIdx: number, dialogueIdx: number) {
+        setOcrData(prev => {
+            const updated = [...prev];
+            const group = { ...updated[imageIdx] };
+            const dialogues = [...group.parsed_dialogue];
+            dialogues.splice(dialogueIdx, 1);    // remove the selected dialogue
+            group.parsed_dialogue = dialogues;
+            updated[imageIdx] = group;
+            return updated;
+        });
+    }
+
+
     return (
         <div className="space-y-6">
             <div className="flex justify-end">
@@ -57,15 +83,19 @@ export default function OcrPreview({ data }: Props) {
                     {isGenerating ? "🔃 Generating... Please Wait" : "🎙️ Generate All TTS (All Images)"}
                 </button>
             </div>
-            {data.map((group, idx) => (
+            {ocrData.map((group, idx) => (
                 <ImagePanel
                     key={group.image_id}
                     ref={el => imagePanelRefs.current[idx] = el as any}
                     group={group}
+                    imageIdx={idx}
                     isGenerating={isGenerating}
                     setIsGenerating={setIsGenerating}
+                    handleDialogueEdit={handleDialogueEdit}
+                    handleDialogueDelete={handleDialogueDelete}
                 />
             ))}
+
 
         </div>
     )

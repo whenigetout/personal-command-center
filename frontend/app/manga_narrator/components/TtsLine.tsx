@@ -145,6 +145,12 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGen
                     disabled={!useCustom || isGenerating}
                     className="bg-gray-800 text-white px-1 w-16 rounded"
                 />
+                <input
+                    value={speakerId}
+                    placeholder="speaker"
+                    disabled
+                    className="bg-gray-800 text-white px-1 w-16 rounded"
+                />
             </div>
         </div>
     )
