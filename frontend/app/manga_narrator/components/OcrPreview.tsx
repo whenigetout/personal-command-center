@@ -59,7 +59,11 @@ export default function OcrPreview({ data }: Props) {
                 </button>
             </div>
             {data.map(group => (
-                <ImagePanel key={group.image_id} group={group} isGenerating={isGenerating} setIsGenerating={setIsGenerating} />
+                <ImagePanel
+                    key={group.image_id}
+                    group={group}
+                    isGenerating={isGenerating}
+                    setIsGenerating={setIsGenerating} />
             ))}
         </div>
     )

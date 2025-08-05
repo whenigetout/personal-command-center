@@ -84,7 +84,7 @@ export default function ImagePanel({ group, isGenerating, setIsGenerating }: Pro
                 className="bg-purple-600 text-white px-3 py-1 rounded mb-2
         disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
             >
-                {batchLoading ? "🗣️ Generating..." : "🗣️ Generate All TTS (This Image)"}
+                {batchLoading ? "🔃 Generating..." : "🎙️ Generate All TTS (This Image)"}
             </button>
 
             <div className="p-4 space-y-2">
