@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react'
 import DialogueLine, { DialogueLineRef } from './DialogueLine'
 
 interface DialogueEntry {
@@ -27,7 +27,12 @@ interface Props {
     setIsGenerating: (x: boolean) => void
 }
 
-export default function ImagePanel({ group, isGenerating, setIsGenerating }: Props) {
+export interface ImagePanelRef {
+    triggerAllTtsForImage: () => Promise<void>
+}
+
+
+const ImagePanel = forwardRef<ImagePanelRef, Props>(function ImagePanel({ group, isGenerating, setIsGenerating }, ref) {
     const [expandedImage, setExpandedImage] = useState(false)
     const [expandedDialogues, setExpandedDialogues] = useState<Set<number>>(new Set())
     const [batchLoading, setBatchLoading] = useState(false)
@@ -64,6 +69,11 @@ export default function ImagePanel({ group, isGenerating, setIsGenerating }: Pro
             setIsGenerating(false)
         }
     }
+
+    // This exposes the function to the parent!
+    useImperativeHandle(ref, () => ({
+        triggerAllTtsForImage: generateAllTtsForImage
+    }));
 
 
     return (
@@ -112,4 +122,5 @@ export default function ImagePanel({ group, isGenerating, setIsGenerating }: Pro
             </div>
         </div>
     )
-}
+});
+export default ImagePanel

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import ImagePanel from './ImagePanel'
+import React, { useState, useRef } from 'react'
+import ImagePanel, { ImagePanelRef } from './ImagePanel'
 
 interface DialogueEntry {
     id: number
@@ -29,18 +29,17 @@ export default function OcrPreview({ data }: Props) {
 
     // GLOBAL: Is *anything* generating?
     const [isGenerating, setIsGenerating] = useState(false);
+    const imagePanelRefs = useRef<(ImagePanelRef | null)[]>([]);
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
     // Helper: batch trigger all TTS
     const generateAllTtsAllImages = async () => {
         setIsGenerating(true)
-        await sleep(1000); // Wait 2 seconds before starting batch
+        // await sleep(1000); // Wait 2 seconds before starting batch
         try {
-            for (const group of data) {
-                for (const dialogue of group.parsed_dialogue) {
-                    // Your TTS trigger logic here
-                }
+            for (let i = 0; i < imagePanelRefs.current.length; i++) {
+                await imagePanelRefs.current[i]?.triggerAllTtsForImage?.();
             }
             alert("Batch TTS for all images DONE!")
         } finally {
@@ -58,13 +57,16 @@ export default function OcrPreview({ data }: Props) {
                     {isGenerating ? "🔃 Generating... Please Wait" : "🎙️ Generate All TTS (All Images)"}
                 </button>
             </div>
-            {data.map(group => (
+            {data.map((group, idx) => (
                 <ImagePanel
                     key={group.image_id}
+                    ref={el => imagePanelRefs.current[idx] = el as any}
                     group={group}
                     isGenerating={isGenerating}
-                    setIsGenerating={setIsGenerating} />
+                    setIsGenerating={setIsGenerating}
+                />
             ))}
+
         </div>
     )
 }
