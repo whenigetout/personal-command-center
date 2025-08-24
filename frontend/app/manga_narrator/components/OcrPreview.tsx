@@ -23,14 +23,16 @@ interface ImageGroup {
 
 interface Props {
     data: ImageGroup[]
+    ocrFilePath: string
 }
 
-export default function OcrPreview({ data }: Props) {
+export default function OcrPreview({ data, ocrFilePath }: Props) {
 
     // GLOBAL: Is *anything* generating?
     const [isGenerating, setIsGenerating] = useState(false);
     const imagePanelRefs = useRef<(ImagePanelRef | null)[]>([]);
     const [ocrData, setOcrData] = useState<ImageGroup[]>(data);
+    const [saveMsg, setSaveMsg] = useState<string>("");
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -72,6 +74,23 @@ export default function OcrPreview({ data }: Props) {
         });
     }
 
+    async function handleSaveOcrData() {
+        setSaveMsg("Saving...");
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/api/manga/save_json/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    file_name: ocrFilePath,  // should be the relative path from outputs/
+                    data: ocrData
+                }),
+            });
+            if (res.ok) setSaveMsg(`✅ OCR saved at ${ocrFilePath}!`);
+            else setSaveMsg("❌ Save failed.");
+        } catch (err) {
+            setSaveMsg("❌ Save failed.");
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -82,6 +101,13 @@ export default function OcrPreview({ data }: Props) {
                 >
                     {isGenerating ? "🔃 Generating... Please Wait" : "🎙️ Generate All TTS (All Images)"}
                 </button>
+                <button
+                    onClick={handleSaveOcrData}
+                    className="bg-green-600 text-white px-4 py-2 rounded ml-4"
+                >
+                    💾 Save OCR Data
+                </button>
+                <span className="ml-2 text-green-400">{saveMsg}</span>
             </div>
             {ocrData.map((group, idx) => (
                 <ImagePanel

@@ -20,7 +20,6 @@ interface OutputDirResult {
 
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 const OCR_API = process.env.NEXT_PUBLIC_OCR_API as string
-console.log('OCR_API is', OCR_API)
 
 const IMAGE_ROOT = process.env.NEXT_PUBLIC_IMAGE_ROOT as string
 const WSL_BASE = process.env.NEXT_PUBLIC_WSL_BASE as string
@@ -57,6 +56,12 @@ export default function MangaNarratorPage() {
     function currentOutputPath(): string {
         return outputPath  // already relative to OUTPUT_ROOT
     }
+
+    // Load output folder tree
+    useEffect(() => {
+        // On initial mount, load the root output tree
+        loadOcrOutputTree('');
+    }, []);
 
 
     useEffect(() => {
@@ -115,7 +120,6 @@ export default function MangaNarratorPage() {
 
             const data = await response.json()
             if (data.status === 'success') {
-                console.log('OCR result:', data)
                 setOcrOutput([{ run_id: data.run_id }])  // assuming it's a list of OCR lines
                 setOcrStatus('done')
             } else {
@@ -126,6 +130,7 @@ export default function MangaNarratorPage() {
             setOcrStatus('error')
         }
     }
+
 
     async function loadOcrJsonData(source: 'api' | 'upload', payload: string | File): Promise<void> {
         try {
@@ -144,6 +149,8 @@ export default function MangaNarratorPage() {
                 const parsed = JSON.parse(text)
                 validData = Array.isArray(parsed) ? parsed : parsed?.results || []
                 label = file.name
+                console.log("file")
+                console.log(file)
             }
 
             setSelectedOcrPath(label)
@@ -160,14 +167,7 @@ export default function MangaNarratorPage() {
 
 
     async function loadOcrFile(path: string) {
-        console.log("Loading OCR from API:", path)
         await loadOcrJsonData('api', path)
-    }
-
-    const handleManualOcrJsonLoad = async () => {
-        const relPath = prompt("Enter OCR JSON path (relative to outputs/):")
-        if (!relPath) return
-        await loadOcrJsonData('api', relPath)
     }
 
     const handleOcrFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -240,23 +240,19 @@ export default function MangaNarratorPage() {
                 >
                     📥 Load OCR result
                 </button>
-                <button
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-2"
-                    onClick={handleManualOcrJsonLoad}
-                >
-                    📂 Load OCR JSON file
-                </button>
+
                 <input
                     type="file"
                     accept=".json"
                     className="hidden"
                     id="ocr-upload"
                     onChange={handleOcrFileUpload}
+                    disabled
                 />
 
                 <label
                     htmlFor="ocr-upload"
-                    className="cursor-pointer bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded ml-2"
+                    className="cursor-pointer bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded ml-2 btn-disabled"
                 >
                     🗂 Upload Local OCR JSON
                 </label>
@@ -395,7 +391,7 @@ export default function MangaNarratorPage() {
             {selectedOcrData && (
                 <div className="mt-10">
                     <h2 className="text-xl font-semibold mb-2">🧾 OCR Line Mapping Preview</h2>
-                    <OcrPreview data={selectedOcrData} />
+                    <OcrPreview data={selectedOcrData} ocrFilePath={selectedOcrPath || "ocr_output.json"} />
                 </div>
             )}
 

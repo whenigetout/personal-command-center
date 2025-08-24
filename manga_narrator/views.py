@@ -2,8 +2,9 @@
 
 import os
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 import json
 
 BASE_MANGA_DIR = settings.MANGA_RUNS_DIR
@@ -40,6 +41,7 @@ def manga_dir_view(request):
 @require_GET
 def manga_output_dir_view(request):
     rel_path = request.GET.get('path', '').strip()
+    rel_path = rel_path.lstrip('/')  # ← REMOVE leading slash if present
     base_dir = settings.MANGA_OUTPUTS_DIR
     target_path = os.path.normpath(os.path.join(base_dir, rel_path))
 
@@ -63,6 +65,7 @@ def manga_output_dir_view(request):
 @require_GET
 def manga_json_file_view(request):
     rel_path = request.GET.get('path', '').strip()
+    rel_path = rel_path.lstrip('/')  # ← REMOVE leading slash if present
     base_dir = settings.MANGA_OUTPUTS_DIR
     target_path = os.path.normpath(os.path.join(base_dir, rel_path))
 
@@ -135,3 +138,31 @@ def latest_tts_audio_view(request):
         "full_path": full_path,
         "url": absolute_url
     })
+
+@csrf_exempt
+@require_POST
+def save_ocr_json(request):
+    try:
+        body = json.loads(request.body)
+        rel_path = body.get("file_name", "").strip()
+        rel_path = rel_path.lstrip('/')  # ← REMOVE leading slash if present
+        data = body.get("data", None)
+
+        if not rel_path or data is None:
+            return JsonResponse({"error": "Missing file_name or data"}, status=400)
+
+        base_dir = settings.MANGA_OUTPUTS_DIR
+        target_path = os.path.normpath(os.path.join(base_dir, rel_path))
+
+        # Prevent path traversal
+        if not target_path.startswith(os.path.normpath(base_dir)):
+            return JsonResponse({'error': 'Invalid path'}, status=400)
+
+        # Save JSON data (indent for readability)
+        with open(target_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+        return JsonResponse({"success": True, "file": rel_path})
+    except Exception as e:
+        print(f"Error saving OCR JSON: {e}")
+        return JsonResponse({"error": str(e)}, status=500)

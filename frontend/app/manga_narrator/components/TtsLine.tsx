@@ -39,15 +39,8 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGen
     const fetchAudioInfo = async () => {
         try {
 
-            console.log("-------------in fetchaudio-------------");
-            console.log(audioFolder);
             const response = await fetch(`${DJANGO_API_ROOT}/api/manga/latest_audio/?path=${audioFolder}`)
             const data = await response.json()
-
-
-            console.log("==========================================================");
-            console.log(data);
-
 
             if (data?.url) {
                 setAudioUrl(data.url)
@@ -75,6 +68,7 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGen
 
     const triggerTTS = async () => {
         setLoading(true);
+        setIsGenerating(true);
         const payload: TtsPayload = {
             text: dialogue.text,
             gender: dialogue.gender,
@@ -101,6 +95,7 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGen
         }
         finally {
             setLoading(false);
+            setIsGenerating(false);
         }
     }
 
@@ -113,7 +108,7 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGen
                     <audio src={audioUrl} controls className="my-2 w-full" />
                     <button
                         onClick={triggerTTS}
-                        className="bg-purple-700 text-white text-xs px-2 py-1 rounded hover:bg-purple-800 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
+                        className="bg-purple-700 text-white text-xs px-2 py-1 rounded hover:bg-purple-800"
                         disabled={loading || isGenerating}
                     >
                         {loading ? "🔃 Regenerating..." : "🔁 Regenerate"}
@@ -122,7 +117,7 @@ const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGen
             ) : (
                 <button
                     onClick={triggerTTS}
-                    className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed"
+                    className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 "
                     disabled={loading || isGenerating}
                 >
                     {loading ? "🔃 Generating..." : "🎙️ Generate"}

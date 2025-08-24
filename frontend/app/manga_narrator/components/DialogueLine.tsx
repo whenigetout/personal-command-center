@@ -1,5 +1,7 @@
 import React, { forwardRef, useRef, useEffect, useImperativeHandle } from 'react';
 import TtsLine from './TtsLine';
+import { genderOptions, emotionOptions } from '../shared/enums'
+import Select from "react-select";
 
 interface DialogueEntry {
     id: number
@@ -91,22 +93,23 @@ const DialogueLine = forwardRef<DialogueLineRef, Props>(function DialogueLine(
                     {expanded && (
                         <div className="mt-2 text-sm text-gray-300 space-y-1">
                             <div><strong>ID:</strong> {dialogue.id}</div>
-                            <div><strong>Gender:</strong>
-                                <input
-                                    className="bg-gray-900 border border-gray-700 text-blue-300 px-2 py-1 rounded mr-2"
-                                    value={dialogue.gender}
-                                    onChange={e => handleDialogueEdit(imageIdx, dialogueIdx, { gender: e.target.value })}
-                                    disabled={isGenerating}
-                                />
-                            </div>
-                            <div><strong>Emotion:</strong>
-                                <input
-                                    className="bg-gray-900 border border-gray-700 text-blue-300 px-2 py-1 rounded mr-2"
-                                    value={dialogue.emotion}
-                                    onChange={e => handleDialogueEdit(imageIdx, dialogueIdx, { emotion: e.target.value })}
-                                    disabled={isGenerating}
-                                />
-                            </div>
+                            <Select
+                                className="basic-single w-56 text-black"
+                                classNamePrefix="select"
+                                value={genderOptions.find(o => o.value === dialogue.gender)}
+                                onChange={opt => handleDialogueEdit(imageIdx, dialogueIdx, { gender: opt?.value || "" })}
+                                options={genderOptions}
+                                isDisabled={isGenerating}
+                            />
+                            <Select
+                                className="basic-single w-56 text-black"
+                                classNamePrefix="select"
+                                value={emotionOptions.find(o => o.value === dialogue.emotion)}
+                                onChange={opt => handleDialogueEdit(imageIdx, dialogueIdx, { emotion: opt?.value || "" })}
+                                options={emotionOptions}
+                                isSearchable
+                                isDisabled={isGenerating}
+                            />
                             <div><strong>Rel Path:</strong> {dialogue.image_rel_path_from_root}</div>
                         </div>
                     )}
