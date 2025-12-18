@@ -4,8 +4,7 @@
 # Tags: 
 
 from typing import List, Optional
-
-from typing import List, Optional
+import math
 
 class RecursionWorkbook:
     # =========================
@@ -565,7 +564,6 @@ class RecursionWorkbook:
 
         return dp_bottom_up_optimal(n)
 
-
     def house_robber(self, nums: list[int]) -> int:
         """
         Problem:
@@ -585,8 +583,92 @@ class RecursionWorkbook:
         Notes:
         - This is a classic take-or-skip problem.
         """
-        pass
+        """
+        Basic recursion
+        invariant: f(idx) is the max sum possible from idx onward
+        base case: if idx >= len(nums): return 0 # no more houses to rob
+        Time: for each house we have 2 choices include it or exclude so O(2^n)
+        Space: recursion stack depth ie O(n)
+        """
+        def recur(idx):
+            if idx >= len(nums):
+                return 0
+            return max(
+                nums[idx] + recur(idx + 2),
+                recur(idx + 1)
+            )
+        
+        """
+        DP top-down ie recur with memo
+        Why? Because there are overlapping subproblems
+        Time: each f(idx) is calculated only once so O(n)
+        Space: O(n) for memo + O(n) recursion stack depth = O(n)
+        """
+        memo = {}
+        def dp_top_down(idx:int):
+            if idx >= len(nums):
+                return 0
+            
+            if idx in memo:
+                return memo[idx]
+            
+            memo[idx] = max(
+                nums[idx] + dp_top_down(idx + 2),
+                dp_top_down(idx + 1)
+            )
 
+            return memo[idx]
+        
+        """
+        DP bottom-up
+        Why? Improves space usage cause no recursion stack
+        Time: O(n) from for loop
+        Space: O(n) for the possible[] array but note there is no recursion stack here so
+        no add. cost compared to above
+        """
+        def dp_bottom_up(arr: List[int]):
+            n = len(arr)
+            possible = [0] * (n)
+
+            if n == 0:
+                return 0
+            if n == 1:
+                return arr[0]
+
+            possible[n-1] = arr[n-1]
+            possible[n-2] = max(arr[n-2], arr[n-1])
+
+            for i in range(n - 3, -1, -1):
+                possible[i] = max(possible[i + 2] + arr[i], possible[i + 1])
+            
+            return possible[0]
+        
+        """
+        DP Optimal space, cause from the recursion or the loop above,
+        dp[i] depends only on dp[i + 1] and dp[i + 2], just like fibonacci,
+        albeit the formula differs, so i can remove the need for the O(n) space
+        Time: O(n) cause for loop
+        Space: O(1) cause no extra space used hahaha
+        """
+        def dp_bottom_up_optimal(arr: List[int]):
+            n = len(arr)
+            if n == 0:
+                return 0
+            if n == 1:
+                return arr[0]
+            
+            next1 = max(arr[n-2], arr[n-1])  # f(i+1)
+            next2 = arr[n-1]                 # f(i+2)
+
+            for i in range(n - 3, -1, -1):
+                curr = max(arr[i] + next2, next1)
+                next2 = next1
+                next1 = curr
+
+            return next1
+
+        return dp_bottom_up_optimal(nums)
+        
     def coin_change(self, coins: list[int], amount: int) -> int:
         """
         Problem:
@@ -600,14 +682,116 @@ class RecursionWorkbook:
         coins = [1], amount = 0 -> 0
 
         Constraints:
-        1 <= len(coins) <= 100
+        1 <= len(coins) <= 100 
         0 <= amount <= 10^4
 
         Notes:
         - Unlimited supply of each coin.
         - Order does NOT matter.
         """
-        pass
+        
+        """
+        Basic recursion
+        invariant: f(idx, amt) is the min no. of coins from coins[idx] onward needed to make up amt
+            for each coin, there are two choices, take it or not, and this transforms the problem like so:
+            f(idx, amt) = min(1 + f(idx, amt - coins[idx]), f(idx + 1, amt))
+        base case: if amt == 0: return 0
+                   if idx == len(coins) or amt < 0: return INFINITY
+        Time: O(2^(n + amount))
+        Space: O(m+n) recursion stack depth
+        """
+        def recur(idx, amt):
+            if amt == 0:
+                return 0
+            if idx == len(coins) or amt < 0:
+                return math.inf
+
+            with_curr = 1 + recur(idx, amt - coins[idx])
+            without_curr = recur(idx + 1, amt)
+            return min(with_curr, without_curr)
+        
+        """
+        DP top-down ie recur with memo
+        Why? Cause the naive recur above is EXPONENTIAL
+        Time: O(amount * n) because that's the max no. of distinct states for this problem and each one is computed only once
+        Space: O(amount * n) because that's the no. of states and we take that much space, note that the space here is MORE than 
+            naive recur above but the time is much better so overall this much much more efficient
+        """
+        memo = {}
+        def dp_top_down(idx, amt):
+            if amt == 0:
+                return 0
+            if idx == len(coins) or amt < 0:
+                return math.inf
+
+            key = (idx, amt)
+            if key in memo:
+                return memo[key]
+
+            with_curr = 1 + recur(idx, amt - coins[idx])
+            without_curr = recur(idx + 1, amt)
+            memo[key] = min(with_curr, without_curr)
+            return memo[key]
+        
+        """
+        DP bottom-up
+        Why? Cause dp bottom up is always the best if it is applicable (i think xd), but ofc this removes the need for space
+            that the recursion stack would take
+        Time: O(n * amount)
+        Space: O(n * amount)
+        """
+        def dp_bottom_up():
+            n = len(coins)
+            dp = [[math.inf for _ in range(amount + 1)] for _ in range(n + 1)]
+
+            # Basce case: amount 0 requires 0 coins
+            for idx in range(n + 1):
+                dp[idx][0] = 0
+
+
+            # Dependency 1: dp[idx][amt - coin]
+            # → requires smaller amt
+            # → so amt must go from small → large
+
+            # Dependency 2: dp[idx + 1][amt]
+            # → requires larger idx
+            # → so idx must go from large → small
+            for idx in range(n - 1, -1, -1):
+                for amt in range(1, amount + 1):
+                    # skip curr coin
+                    skip = dp[idx + 1][amt]
+
+                    # take curr coin (if possible)
+                    take = math.inf
+                    if amt >= coins[idx]:
+                        take = 1 + dp[idx][amt - coins[idx]]
+
+                    dp[idx][amt] = min(take, skip)
+            
+            return dp[0][amount]
+
+        """
+        Optimal Coin Change solution
+        DP bottom-up - 1D dp (no need to have a 2d memo array)
+        Why? Cause dp bottom up is always the best if it is applicable (i think xd), but ofc this removes the need for space
+            that the recursion stack would take
+        The 1D invariant (lock this in), we change the meaning of dp completely:
+            dp[amt] = minimum number of coins needed to make amount amt using all coins processed so far
+        Time: O(n * amount)
+        Space: O(amount)
+        """
+        def optimal_coin_change():
+            dp = [math.inf] * (amount + 1)
+            dp[0] = 0
+
+            for coin in coins:
+                for amt in range(coin, amount + 1):
+                    dp[amt] = min(dp[amt], 1 + dp[amt - coin])
+
+            return dp[amount] if dp[amount] != math.inf else -1
+
+        res = optimal_coin_change()
+        return res if res != math.inf else -1
 
     def length_of_lis(self, nums: list[int]) -> int:
         """
@@ -626,7 +810,27 @@ class RecursionWorkbook:
         Notes:
         - Subsequence does NOT have to be contiguous.
         """
-        pass
+
+        """
+        Basic recursion
+        invariant: f(idx, prev_max) = length of the longest strictly increasing subsequence from idx onward,
+            prev_max = max element so far
+        base case: if idx == len(arr): return 0 # empty arr so no subsequence
+                   if prev_max is not None and nums[idx] <= prev_max: return 0 # curr elem does NOT add to the INCREASING subsequence
+        Time: O(2^n) where n = len(nums)
+        Space: O(n)
+        """
+        def recur(idx, prev_max):
+            if idx == len(nums):
+                return 0
+            if prev_max is not None and nums[idx] <= prev_max:
+                return recur(idx + 1, prev_max)
+            return max(
+                1 + recur(idx + 1, nums[idx]),
+                recur(idx + 1, prev_max)
+            )
+        
+        return recur(0, None)
 
     def can_partition(self, nums: list[int]) -> bool:
         """

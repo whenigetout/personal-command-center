@@ -41,3 +41,18 @@ def test_fib():
 def test_climbstairs():
     assert obj.climb_stairs(4) == 5
     assert obj.climb_stairs(5) == 8
+
+def test_house_robber():
+    assert obj.house_robber([1,2,3,1]) == 4
+    assert obj.house_robber([2,7,9,3,1]) == 12
+    assert obj.house_robber([2,1,1,2]) == 4
+
+def test_coin_change():
+    assert obj.coin_change([1,2,5], 11) == 3
+    assert obj.coin_change([2], 3) == -1
+    assert obj.coin_change([1], 0) == 0
+
+def test_length_of_lis():
+    assert obj.length_of_lis([10,9,2,5,3,7,101,18]) == 4
+    assert obj.length_of_lis([0,1,0,3,2,3]) == 4
+    assert obj.length_of_lis([7,7,7,7]) == 1
