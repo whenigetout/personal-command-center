@@ -2,19 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Django",
+            "name": "Pytest: Current File",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}\\manage.py",
+            "module": "pytest",
             "args": [
-                "runserver"
+                "${file}"
             ],
-            "django": true,
-            "env": {
-                "DJANGO_SETTINGS_MODULE": "corecenter.settings" // or your settings path
-            },
             "console": "integratedTerminal",
-            "justMyCode": false
+            "justMyCode": true
         }
     ]
 }

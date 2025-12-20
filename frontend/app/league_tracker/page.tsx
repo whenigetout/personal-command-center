@@ -60,7 +60,7 @@ export default function LeagueTracker() {
 
     const fetchData = async () => {
         try {
-            const res = await fetch('http://localhost:8000/api/league_accounts_display/');
+            const res = await fetch('http://localhost:9000/api/league_accounts_display/');
             if (res.ok) {
                 const data = await res.json();
                 setAccounts(data);
@@ -71,7 +71,7 @@ export default function LeagueTracker() {
     };
 
     const handleRefreshAll = async () => {
-        const res = await fetch('http://localhost:8000/api/refresh_all_accounts/', { method: 'POST' });
+        const res = await fetch('http://localhost:9000/api/refresh_all_accounts/', { method: 'POST' });
         if (res.ok) {
             alert("✅ Refresh complete!");
             fetchData();
@@ -83,7 +83,7 @@ export default function LeagueTracker() {
     const handleRefreshRow = async (riot_id: string) => {
         setLoadingRiotIds(prev => new Set(prev).add(riot_id));
         try {
-            const res = await fetch('http://localhost:8000/api/refresh_single_account/', {
+            const res = await fetch('http://localhost:9000/api/refresh_single_account/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ riot_id })
