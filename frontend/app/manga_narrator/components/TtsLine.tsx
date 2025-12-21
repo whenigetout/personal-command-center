@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
+import { triggerTtsApi, TtsPayload } from '../utils/ttsAPI'
 
 interface Props {
     run_id: string
@@ -12,12 +13,14 @@ interface Props {
         speaker: string
     }
     speakerId: string
+    isGenerating: boolean
+    setIsGenerating: (val: boolean) => void
 }
 
 const DJANGO_API_ROOT = process.env.NEXT_PUBLIC_BACKEND_API as string
 const TTS_API_ROOT = process.env.NEXT_PUBLIC_TTS_API as string
 
-export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
+const TtsLine = forwardRef(function TtsLine({ run_id, dialogue, speakerId, isGenerating, setIsGenerating }: Props, ref) {
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
     const [version, setVersion] = useState<number | null>(null)
     const [cfg, setCfg] = useState("")
@@ -28,25 +31,24 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
     const imageNameBase = dialogue.image_file_name.split('/').pop()?.replace('.', '_')
     const audioFolder = `${run_id}/${dialogue.image_rel_path_from_root}/${imageNameBase}/dialogue__${dialogue.id}`
 
+    useImperativeHandle(ref, () => ({
+        triggerTTS,
+    }));
+
 
     const fetchAudioInfo = async () => {
         try {
 
-            console.log("-------------in fetchaudio-------------");
-            console.log(audioFolder);
             const response = await fetch(`${DJANGO_API_ROOT}/api/manga/latest_audio/?path=${audioFolder}`)
             const data = await response.json()
 
-
-            console.log(data);
-
-
             if (data?.url) {
                 setAudioUrl(data.url)
-                setVersion(parseInt(data.file_name.match(/v(\d+)/)?.[1] || "0", 10))
+                const file_name = data.latest
+                setVersion(parseInt(file_name.match(/v(\d+)/)?.[1] || "0", 10))
 
-                const exgMatch = data.file_name.match(/exg([\d.]+)/)
-                const cfgMatch = data.file_name.match(/cfg([\d.]+)/)
+                const exgMatch = file_name.match(/exg([\d.]+)/)
+                const cfgMatch = file_name.match(/cfg([\d.]+)/)
 
                 setExaggeration(exgMatch?.[1] || "")
                 setCfg(cfgMatch?.[1] || "")
@@ -63,9 +65,11 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
         fetchAudioInfo()
     }, [run_id, dialogue.id])
 
+
     const triggerTTS = async () => {
-        setLoading(true)
-        const payload = {
+        setLoading(true);
+        setIsGenerating(true);
+        const payload: TtsPayload = {
             text: dialogue.text,
             gender: dialogue.gender,
             emotion: dialogue.emotion,
@@ -77,25 +81,24 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
             use_custom_params: useCustom,
             exaggeration: useCustom ? parseFloat(exaggeration) : undefined,
             cfg: useCustom ? parseFloat(cfg) : undefined
-        }
+        };
 
         try {
-            const res = await fetch(`${TTS_API_ROOT}/tts/dialogue`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-            const result = await res.json()
+            const result = await triggerTtsApi(payload);
             if (result.status === "success") {
-                await fetchAudioInfo()
+                await fetchAudioInfo();
             } else {
-                alert("TTS error: " + result.message)
+                alert("TTS error: " + result.message);
             }
         } catch (err) {
-            console.error("TTS generation failed:", err)
+            console.error("TTS generation failed:", err);
         }
-        setLoading(false)
+        finally {
+            setLoading(false);
+            setIsGenerating(false);
+        }
     }
+
 
     return (
         <div className="border border-purple-600 rounded mt-2 p-2 bg-gray-900">
@@ -106,38 +109,46 @@ export default function TtsLine({ run_id, dialogue, speakerId }: Props) {
                     <button
                         onClick={triggerTTS}
                         className="bg-purple-700 text-white text-xs px-2 py-1 rounded hover:bg-purple-800"
-                        disabled={loading}
+                        disabled={loading || isGenerating}
                     >
-                        🔁 Regenerate
+                        {loading ? "🔃 Regenerating..." : "🔁 Regenerate"}
                     </button>
                 </>
             ) : (
                 <button
                     onClick={triggerTTS}
-                    className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700"
-                    disabled={loading}
+                    className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 "
+                    disabled={loading || isGenerating}
                 >
-                    🎙️ Generate
+                    {loading ? "🔃 Generating..." : "🎙️ Generate"}
                 </button>
             )}
 
             <div className="mt-2 flex items-center gap-3 text-xs text-gray-300">
-                <label><input type="checkbox" checked={useCustom} onChange={() => setUseCustom(!useCustom)} /> Use custom cfg/exg</label>
+                <label><input type="checkbox" checked={useCustom} disabled={isGenerating} onChange={() => setUseCustom(!useCustom)} /> Use custom cfg/exg</label>
                 <input
                     value={cfg}
                     onChange={e => setCfg(e.target.value)}
                     placeholder="cfg"
-                    disabled={!useCustom}
+                    disabled={!useCustom || isGenerating}
                     className="bg-gray-800 text-white px-1 w-16 rounded"
                 />
                 <input
                     value={exaggeration}
                     onChange={e => setExaggeration(e.target.value)}
                     placeholder="exg"
-                    disabled={!useCustom}
+                    disabled={!useCustom || isGenerating}
+                    className="bg-gray-800 text-white px-1 w-16 rounded"
+                />
+                <input
+                    value={speakerId}
+                    placeholder="speaker"
+                    disabled
                     className="bg-gray-800 text-white px-1 w-16 rounded"
                 />
             </div>
         </div>
     )
-}
+});
+
+export default TtsLine
