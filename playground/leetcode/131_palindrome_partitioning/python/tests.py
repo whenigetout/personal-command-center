@@ -11,3 +11,5 @@ def test_placeholder():
     assert isPalindrome("abc") == False
     assert isPalindrome("abcxcba") == True
     assert isPalindrome("adda") == True
+
+print(sol.partition("efe"))

@@ -17,19 +17,25 @@ def isPalindrome(s: str) -> bool:
         r -= 1
     return True
 
-def arrToStr(arr: List[str]):
-    return "".join(arr)
-
 class Solution:
     def partition(self, s: str) -> List[List[str]]:
         res = []
         path = []
 
         def dfs(idx):
-            path.append(s[idx])
-            pathStr = arrToStr(path)
-            if not isPalindrome(pathStr):
-                dfs(idx + 1)
-            else:
-                res.append(pathStr)
+            if idx == len(s):
+                res.append(path[:])
+                return
+            
+            for j in range(idx, len(s)):
+                substr = s[idx : j + 1]
+                if isPalindrome(substr):
+                    path.append(substr)
+                    dfs(j + 1)
+                    path.pop()
+                else:
+                    continue
+                    
+        dfs(0)
+        return res
                 
