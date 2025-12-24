@@ -1,0 +1,4 @@
+//get the types from a different service
+npx openapi-typescript "path to openapi.json" -o types/video_api.ts 
+//export project tree structure
+git ls-files | tree --fromfile > local_tmp/project_structure.txt

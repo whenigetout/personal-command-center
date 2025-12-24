@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import OcrPreview from './components/OcrPreview'
-import PanPreview from './components/PanPreview'
+import VideoPreviewClient from './client/VideoPreviewClient'
 
 interface DirResult {
     folders: string[]
@@ -47,13 +47,6 @@ export default function MangaNarratorPage() {
     const [outputTree, setOutputTree] = useState<OutputDirResult>({ folders: [], files: [] })
     const [outputPathHistory, setOutputPathHistory] = useState<string[]>([])
 
-    // ---- Video Preview State ----
-    const [previewRunId, setPreviewRunId] = useState<string>("")
-    const [previewData, setPreviewData] = useState<any[] | null>(null)
-    const [previewLoading, setPreviewLoading] = useState(false)
-    const [previewError, setPreviewError] = useState<string | null>(null)
-
-
     function getInputPath(subpath: string = ''): string {
         return `${INPUT_ROOT}${subpath ? '/' + subpath : ''}`
     }
@@ -94,29 +87,6 @@ export default function MangaNarratorPage() {
                 .catch(err => console.error('Failed to fetch output dir:', err))
         }
     }, [outputPath])
-
-    async function loadVideoPreviews() {
-        if (!previewRunId.trim()) return
-
-        setPreviewLoading(true)
-        setPreviewError(null)
-        setPreviewData(null)
-
-        try {
-            const res = await fetch(
-                `${VIDEO_API}/video/runs/${previewRunId}/previews`
-            )
-            if (!res.ok) throw new Error("Failed to load previews")
-
-            const data = await res.json()
-            setPreviewData(data)
-        } catch (err: any) {
-            setPreviewError(err.message || "Preview load failed")
-        } finally {
-            setPreviewLoading(false)
-        }
-    };
-
 
     function goIntoFolder(folder: string) {
         const newHistory = [...pathHistory, folder]
@@ -380,51 +350,7 @@ export default function MangaNarratorPage() {
                 </div>
             </div>
 
-            <div className="mt-12 border-t pt-6">
-                <h2 className="text-xl font-semibold mb-2">🎬 Video Pan Preview (WIP)</h2>
-
-                <div className="flex gap-2 mb-4">
-                    <input
-                        type="text"
-                        value={previewRunId}
-                        onChange={(e) => setPreviewRunId(e.target.value)}
-                        placeholder="Enter run_id (e.g. test_run_001)"
-                        className="flex-1 px-3 py-2 border rounded bg-gray-900 text-gray-200"
-                    />
-                    <button
-                        onClick={loadVideoPreviews}
-                        className="bg-green-600 px-4 py-2 rounded text-white"
-                    >
-                        Load Preview
-                    </button>
-                </div>
-
-                {previewLoading && <p className="text-gray-400">Loading previews…</p>}
-                {previewError && <p className="text-red-500">{previewError}</p>}
-            </div>
-
-
-            {previewData && (
-                <div className="mt-6 space-y-10">
-                    {previewData.map((image: any) => (
-                        <div key={image.image_file_name}>
-                            <h3 className="text-lg font-semibold mb-3">
-                                🖼 {image.image_file_name}
-                            </h3>
-
-                            {image.previews.map((preview: any) => (
-                                <PanPreview
-                                    key={preview.dialogue_id}
-                                    image={image}
-                                    preview={preview}
-                                />
-                            ))}
-                        </div>
-                    ))}
-                </div>
-            )}
-
-
+            <VideoPreviewClient />
 
             {selectedImage && (
                 <div className="mt-6">
@@ -464,15 +390,12 @@ export default function MangaNarratorPage() {
                 </div>
             )}
 
-
             {selectedOcrData && (
                 <div className="mt-10">
                     <h2 className="text-xl font-semibold mb-2">🧾 OCR Line Mapping Preview</h2>
                     <OcrPreview data={selectedOcrData} ocrFilePath={selectedOcrPath || "ocr_output.json"} />
                 </div>
             )}
-
-
 
             {fullOcrData && (
                 <div className="mt-6">
