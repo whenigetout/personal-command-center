@@ -1,7 +1,7 @@
 # manga_narrator/views.py
 
 import os
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -166,3 +166,22 @@ def save_ocr_json(request):
     except Exception as e:
         print(f"Error saving OCR JSON: {e}")
         return JsonResponse({"error": str(e)}, status=500)
+
+@require_GET
+def manga_image_view(request):
+    """
+    Serve a manga image safely from MANGA_INPUTS_DIR.
+    """
+    rel_path = request.GET.get("path", "").strip()
+    rel_path = rel_path.lstrip("/")
+
+    base_dir = settings.MANGA_INPUTS_DIR
+    target_path = os.path.normpath(os.path.join(base_dir, rel_path))
+
+    if not target_path.startswith(os.path.normpath(base_dir)):
+        return JsonResponse({"error": "Invalid path"}, status=400)
+
+    if not os.path.isfile(target_path):
+        return JsonResponse({"error": "Image not found"}, status=404)
+
+    return FileResponse(open(target_path, "rb"), content_type="image/jpeg")
