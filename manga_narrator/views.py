@@ -6,6 +6,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import json
+from manga_narrator.contracts.manga_dir import *
 
 BASE_MANGA_DIR = settings.MANGA_RUNS_DIR
 
@@ -32,10 +33,21 @@ def manga_dir_view(request):
     for entry in os.scandir(target_path):
         if entry.is_dir():
             folders.append(entry.name)
-        elif entry.is_file() and entry.name.lower().endswith(('.jpg', '.jpeg', '.png')):
-            images.append(entry.name)
+        elif entry.is_file() and entry.name.lower().endswith(('.jpg', '.png', '.jpeg')):
+            rel_image_path = f"{rel_path}/{entry.name}" if rel_path else entry.name
 
-    return JsonResponse({'folders': folders, 'images': images})
+            images.append(
+                ImageEntry(
+                    name=entry.name,
+                    relative_path=rel_image_path,
+                    url=f"/api/manga/image/?path={rel_image_path}"
+                )
+            )
+
+    return MangaDirResponse(
+        folders=folders,
+        images=images
+    )
 
 
 @require_GET
@@ -58,9 +70,20 @@ def manga_output_dir_view(request):
         if entry.is_dir():
             folders.append(entry.name)
         elif entry.is_file() and entry.name.lower().endswith(".json"):
-            files.append(entry.name)
+            rel_file_path = f"{rel_path}/{entry.name}" if rel_path else entry.name
 
-    return JsonResponse({'folders': folders, 'files': files})
+            files.append(
+                ImageEntry(
+                    name=entry.name,
+                    relative_path=rel_file_path,
+                    url=f"/api/manga/image/?path={rel_file_path}"
+                )
+            )
+
+    return MangaOutputDirResponse(
+        folders=folders,
+        files=files
+    )
 
 @require_GET
 def manga_json_file_view(request):
