@@ -36,6 +36,8 @@ const OCRInputSection = ({
         const next = pathHistory.slice(0, -1)
         setPathHistory(next)
         setRelativeInputPath(next.join('/'))
+        //clear image selection
+        onSelectImage('');
     }
 
     const triggerOcr = async () => {
@@ -68,8 +70,10 @@ const OCRInputSection = ({
         const newHistory = [...pathHistory, folder]
         const newPath = newHistory.join('/')
 
-        setPathHistory(newHistory)
-        setRelativeInputPath(newPath)
+        setPathHistory(newHistory);
+        setRelativeInputPath(newPath);
+        //clear image selection 
+        onSelectImage("");
     }
 
     useEffect(() => {
