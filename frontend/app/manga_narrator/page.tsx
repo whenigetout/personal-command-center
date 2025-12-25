@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import OcrPreview from './components/OcrPreview'
 import VideoPreviewClient from './client/VideoPreviewClient'
+import OCRInputSection from './components/ocr/OCRInputSection'
 
 interface DirResult {
     folders: string[]
@@ -46,6 +47,7 @@ export default function MangaNarratorPage() {
     const [outputPath, setOutputPath] = useState<string>('')  // relative path under outputs
     const [outputTree, setOutputTree] = useState<OutputDirResult>({ folders: [], files: [] })
     const [outputPathHistory, setOutputPathHistory] = useState<string[]>([])
+    const [ocrRunId, setOcrRunId] = useState<string | null>(null)
 
     function getInputPath(subpath: string = ''): string {
         return `${INPUT_ROOT}${subpath ? '/' + subpath : ''}`
@@ -167,7 +169,6 @@ export default function MangaNarratorPage() {
         }
     }
 
-
     async function loadOcrFile(path: string) {
         await loadOcrJsonData('api', path)
     }
@@ -216,89 +217,14 @@ export default function MangaNarratorPage() {
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">📚 Manga Narrator: Load Chapter</h1>
-            <p className="mb-2 text-sm text-gray-400">📂 Current folder: <code>{getInputPath(relativeInputPath)}</code></p>
-
-            {pathHistory.length > 0 && (
-                <button
-                    onClick={goBack}
-                    className="mb-4 text-blue-600 underline"
-                >
-                    ← Back to {pathHistory[pathHistory.length - 2] || 'root'}
-                </button>
-            )}
 
 
-            <div className="mb-4">
-                <button
-                    onClick={triggerOcr}
-                    className="bg-purple-600 text-white px-4 py-2 rounded mr-4"
-                >
-                    {ocrStatus === 'processing' ? 'Running OCR...' : '🔍 Run OCR on this folder'}
-                </button>
-                {ocrStatus === 'done' && <span className="text-green-600">✔ OCR completed</span>}
-                <button
-                    onClick={loadFullOcrResult}
-                    className="bg-blue-600 text-white px-3 py-1 rounded ml-2"
-                >
-                    📥 Load OCR result
-                </button>
+            <OCRInputSection
+                onOcrComplete={setOcrRunId}
+                onSelectImage={setSelectedImage}
+            />
+            {/* {ocrRunId && <OCROutputSection runId={ocrRunId} />} */}
 
-                <input
-                    type="file"
-                    accept=".json"
-                    className="hidden"
-                    id="ocr-upload"
-                    onChange={handleOcrFileUpload}
-                    disabled
-                />
-
-                <label
-                    htmlFor="ocr-upload"
-                    className="cursor-pointer bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded ml-2 btn-disabled"
-                >
-                    🗂 Upload Local OCR JSON
-                </label>
-
-
-                {ocrStatus === 'error' && <span className="text-red-600">✖ OCR failed</span>}
-            </div>
-
-
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <h2 className="text-lg font-semibold">📁 Folders</h2>
-                    <ul className="border p-2 h-64 overflow-y-auto">
-                        {(dirData?.folders || []).map(folder => {
-                            if (relativeInputPath === '' && folder === OUTPUT_ROOT) return null  // 👈 hide outputs at root
-                            return (
-                                <li key={folder}>
-                                    <button
-                                        onClick={() => goIntoFolder(folder)}
-                                        className="text-blue-500 hover:underline"
-                                    >
-                                        {folder}
-                                    </button>
-                                </li>
-                            )
-                        })}
-
-                    </ul>
-                </div>
-
-                <div>
-                    <h2 className="text-lg font-semibold">🖼️ Images</h2>
-                    <ul className="border p-2 h-64 overflow-y-auto">
-                        {(dirData?.images || []).map(image => (
-                            <li key={image}>
-                                <button onClick={() => setSelectedImage(image)}>
-                                    {image}
-                                </button>
-                            </li>
-                        ))}
-
-                    </ul>
-                </div>
-            </div>
 
             <div className="mt-10 border-t pt-6">
                 <h2 className="text-xl font-semibold">🗂 OCR Output Tree</h2>

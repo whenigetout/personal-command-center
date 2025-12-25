@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import OcrPreview from './components/OcrPreview'
+import VideoPreviewClient from './client/VideoPreviewClient'
 
 interface DirResult {
     folders: string[]
@@ -20,7 +21,7 @@ interface OutputDirResult {
 
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 const OCR_API = process.env.NEXT_PUBLIC_OCR_API as string
-console.log('OCR_API is', OCR_API)
+const VIDEO_API = process.env.NEXT_PUBLIC_VIDEO_API as string
 
 const IMAGE_ROOT = process.env.NEXT_PUBLIC_IMAGE_ROOT as string
 const WSL_BASE = process.env.NEXT_PUBLIC_WSL_BASE as string
@@ -57,6 +58,12 @@ export default function MangaNarratorPage() {
     function currentOutputPath(): string {
         return outputPath  // already relative to OUTPUT_ROOT
     }
+
+    // Load output folder tree
+    useEffect(() => {
+        // On initial mount, load the root output tree
+        loadOcrOutputTree('');
+    }, []);
 
 
     useEffect(() => {
@@ -115,7 +122,6 @@ export default function MangaNarratorPage() {
 
             const data = await response.json()
             if (data.status === 'success') {
-                console.log('OCR result:', data)
                 setOcrOutput([{ run_id: data.run_id }])  // assuming it's a list of OCR lines
                 setOcrStatus('done')
             } else {
@@ -126,87 +132,73 @@ export default function MangaNarratorPage() {
             setOcrStatus('error')
         }
     }
-    async function loadFullOcrResult() {
-        const runId = ocrOutput?.[0]?.run_id
-        if (!runId) return
 
+
+    async function loadOcrJsonData(source: 'api' | 'upload', payload: string | File): Promise<void> {
         try {
-            const response = await fetch(`${BACKEND_API}/api/manga/output_dir/?path=${runId}`)
-            if (!response.ok) throw new Error("Failed to load OCR output folder tree")
+            let validData: any[] = []
+            let label = ''
 
-            const data: OutputDirResult = await response.json()
+            if (source === 'api') {
+                const response = await fetch(`${BACKEND_API}/api/manga/json_file/?path=${encodeURIComponent(payload as string)}`)
+                if (!response.ok) throw new Error('Failed to fetch OCR JSON from API')
+                const json = await response.json()
+                validData = Array.isArray(json) ? json : json?.results || []
+                label = payload as string
+            } else if (source === 'upload') {
+                const file = payload as File
+                const text = await file.text()
+                const parsed = JSON.parse(text)
+                validData = Array.isArray(parsed) ? parsed : parsed?.results || []
+                label = file.name
+                console.log("file")
+                console.log(file)
+            }
 
-            setOutputPath(runId)
-            setOutputPathHistory([runId])
-            setOutputTree(data)  // ✅ this populates folders/files
-        } catch (err) {
-            console.error("Error loading OCR output tree:", err)
+            setSelectedOcrPath(label)
+            setSelectedOcrData(validData)
+            console.log("-------data 'validData' from loadocrjsondata-----");
+            console.log(validData);
+
+        } catch (error) {
+            console.error('Error loading OCR JSON:', error)
+            alert('Failed to load or parse OCR JSON.')
+            setSelectedOcrData([{ error: 'Failed to load result' }])
         }
     }
 
 
     async function loadOcrFile(path: string) {
-        try {
-            console.log("inside loadocr----------------")
-
-            const response = await fetch(`${BACKEND_API}/api/manga/json_file/?path=${encodeURIComponent(path)}`)
-
-            if (!response.ok) throw new Error("Failed to load selected OCR JSON")
-
-            const data = await response.json()
-            setSelectedOcrPath(path)
-            const validData = Array.isArray(data) ? data : data?.results || []
-            setSelectedOcrData(validData)
-
-            console.log("loadocr log----------------")
-            console.log(data)
-        } catch (err) {
-            console.error("Error loading OCR file from Django API:", err)
-            setSelectedOcrData([{ error: "Failed to load result" }])
-        }
-    }
-
-    const handleManualOcrJsonLoad = async () => {
-        const relPath = prompt("Enter OCR JSON path (relative to outputs/):");
-        if (!relPath) return;
-
-        try {
-            const response = await fetch(
-                `${BACKEND_API}/api/manga/json_file/?path=${encodeURIComponent(relPath)}`
-            );
-
-            if (!response.ok) throw new Error("Failed to load JSON file");
-            const json = await response.json();
-            console.log("OCR JSON fetched manually:", json);
-
-            // FIX: pull results if they exist
-            const validData = Array.isArray(json) ? json : json?.results || [];
-
-            setSelectedOcrPath(relPath);
-            setSelectedOcrData(validData);
-        } catch (error) {
-            console.error("Error loading OCR file:", error);
-            alert("Failed to load OCR file");
-        }
+        await loadOcrJsonData('api', path)
     }
 
     const handleOcrFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const file = e.target.files?.[0]
+        if (!file) return
+        await loadOcrJsonData('upload', file)
+    }
 
+    async function loadOcrOutputTree(runId: string) {
         try {
-            const text = await file.text();
-            const parsed = JSON.parse(text);
-            const validData = Array.isArray(parsed) ? parsed : parsed?.results || [];
+            const response = await fetch(`${BACKEND_API}/api/manga/output_dir/?path=${runId}`);
+            if (!response.ok) throw new Error("Failed to load OCR output folder tree");
 
-            setSelectedOcrPath(file.name);
-            setSelectedOcrData(validData);
+            const data: OutputDirResult = await response.json();
+
+            setOutputPath(runId);
+            setOutputPathHistory([runId]);
+            setOutputTree(data);
         } catch (err) {
-            console.error("Failed to parse uploaded OCR JSON:", err);
-            alert("Invalid or unreadable OCR file.");
+            console.error("Error loading OCR output tree:", err);
         }
-    };
+    }
 
+    async function loadFullOcrResult() {
+        const runId = ocrOutput?.[0]?.run_id;
+        if (!runId) return;
+
+        await loadOcrOutputTree(runId);
+    }
 
     function goIntoOutputFolder(folder: string) {
         const newHistory = [...outputPathHistory, folder]
@@ -250,23 +242,19 @@ export default function MangaNarratorPage() {
                 >
                     📥 Load OCR result
                 </button>
-                <button
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-2"
-                    onClick={handleManualOcrJsonLoad}
-                >
-                    📂 Load OCR JSON file
-                </button>
+
                 <input
                     type="file"
                     accept=".json"
                     className="hidden"
                     id="ocr-upload"
                     onChange={handleOcrFileUpload}
+                    disabled
                 />
 
                 <label
                     htmlFor="ocr-upload"
-                    className="cursor-pointer bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded ml-2"
+                    className="cursor-pointer bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded ml-2 btn-disabled"
                 >
                     🗂 Upload Local OCR JSON
                 </label>
@@ -362,6 +350,7 @@ export default function MangaNarratorPage() {
                 </div>
             </div>
 
+            <VideoPreviewClient />
 
             {selectedImage && (
                 <div className="mt-6">
@@ -401,15 +390,12 @@ export default function MangaNarratorPage() {
                 </div>
             )}
 
-
             {selectedOcrData && (
                 <div className="mt-10">
                     <h2 className="text-xl font-semibold mb-2">🧾 OCR Line Mapping Preview</h2>
-                    <OcrPreview data={selectedOcrData} />
+                    <OcrPreview data={selectedOcrData} ocrFilePath={selectedOcrPath || "ocr_output.json"} />
                 </div>
             )}
-
-
 
             {fullOcrData && (
                 <div className="mt-6">
