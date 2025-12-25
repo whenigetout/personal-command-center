@@ -1,9 +1,9 @@
-import { DirResult } from "@/app/manga_narrator/shared/shared_interfaces"
 import { useState, useEffect } from "react"
 import { Dispatch, SetStateAction } from "react"
+import { MangaDirResponse, ImageEntry } from "@/app/manga_narrator/types/manga_narrator_django_api"
 
 interface FolderBrowserProps {
-    dirData: DirResult
+    dirData: MangaDirResponse | null
     currentRelativePath: string
     OUTPUT_ROOT: string
 
@@ -48,13 +48,11 @@ const FolderBrowser = ({
                 <h2 className="text-lg font-semibold">🖼️ Images</h2>
                 <ul className="border p-2 h-64 overflow-y-auto">
                     {(dirData?.images || []).map(image => (
-                        <li key={image}>
+                        <li key={image.name}>
                             <button onClick={() => onSelectImage(
-                                currentRelativePath
-                                    ? `${currentRelativePath}/${image}`
-                                    : image
+                                image.relative_path
                             )}>
-                                {image}
+                                {image.name}
                             </button>
                         </li>
                     ))}

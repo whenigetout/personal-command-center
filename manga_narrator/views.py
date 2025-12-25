@@ -44,11 +44,12 @@ def manga_dir_view(request):
                 )
             )
 
-    return MangaDirResponse(
+    response = MangaDirResponse(
         folders=folders,
         images=images
     )
 
+    return JsonResponse(response.model_dump(), safe=False)
 
 @require_GET
 def manga_output_dir_view(request):
@@ -80,10 +81,12 @@ def manga_output_dir_view(request):
                 )
             )
 
-    return MangaOutputDirResponse(
+    response = MangaOutputDirResponse(
         folders=folders,
         files=files
     )
+
+    return JsonResponse(response.model_dump(), safe=False)
 
 @require_GET
 def manga_json_file_view(request):

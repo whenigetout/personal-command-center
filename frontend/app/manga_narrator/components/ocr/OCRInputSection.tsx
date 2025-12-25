@@ -5,7 +5,7 @@ import InputPathBreadcrumb from './InputPathBreadcrumb'
 import RunOCRButton from './RunOCRButton'
 import FolderBrowser from './input_section/FolderBrowser'
 import { OCR_STATUS, OcrStatus } from '../../shared/status_enums'
-import { DirResult } from '../../shared/shared_interfaces'
+import { MangaDirResponse, ImageEntry } from '../../types/manga_narrator_django_api'
 
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 const OCR_API = process.env.NEXT_PUBLIC_OCR_API as string
@@ -26,7 +26,7 @@ const OCRInputSection = ({
     const [pathHistory, setPathHistory] = useState<string[]>([])
     const [ocrStatus, setOcrStatus] =
         useState<OcrStatus>(OCR_STATUS.IDLE)
-    const [dirData, setDirData] = useState<DirResult>({ folders: [], images: [] })
+    const [dirData, setDirData] = useState<MangaDirResponse | null>(null)
 
     const getInputPath = (sub = '') =>
         `${INPUT_ROOT}${sub ? '/' + sub : ''}`
@@ -78,10 +78,10 @@ const OCRInputSection = ({
                 if (!res.ok) throw new Error('Bad response')
                 return res.json()
             })
-            .then((data: DirResult) => setDirData(data))
+            .then((data: MangaDirResponse) => setDirData(data))
             .catch(err => {
                 console.error('Failed to fetch dir:', err)
-                setDirData({ folders: [], images: [] })  // fallback
+                setDirData(null)  // fallback
             })
     }, [relativeInputPath])
 
