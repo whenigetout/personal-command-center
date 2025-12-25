@@ -1,4 +1,4 @@
-import { DialoguePreviewOut, ImagePreviewOut } from "../../types/video_api"
+import { DialoguePreviewOut, ImagePreviewOut } from "../../types/video_api_types"
 import PanPreview from "../preview/PanPreview"
 
 export default function VideoPreviewPanel({

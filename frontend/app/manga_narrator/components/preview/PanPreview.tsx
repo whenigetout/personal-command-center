@@ -1,4 +1,4 @@
-import { ImagePreviewOut, DialoguePreviewOut } from "../../types/video_api"
+import { ImagePreviewOut, DialoguePreviewOut } from "../../types/video_api_types"
 import {
     resolveImageSrc
 

@@ -1,4 +1,4 @@
-import type { ImagePreviewOut } from '@/app/manga_narrator/types/video_api'
+import type { ImagePreviewOut } from '@/app/manga_narrator/types/video_api_types'
 
 export async function fetchVideoPreviews(runId: string): Promise<ImagePreviewOut[]> {
     const VIDEO_API = process.env.NEXT_PUBLIC_VIDEO_API as string

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { fetchVideoPreviews } from "../server/fetchVideoPreviews"
-import { ImagePreviewOut } from "../types/video_api"
+import { ImagePreviewOut } from "../types/video_api_types"
 import VideoPreviewPanel from "../components/panels/VideoPreviewPanel"
 
 export default function VideoPreviewClient() {
