@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import OcrPreview from './components/OcrPreview'
 import VideoPreviewClient from './client/VideoPreviewClient'
-import OCRInputSection from './components/ocr/OCRInputSection'
+import OCRInputSectionClient from './client/OCRInputSectionClient'
 
 interface DirResult {
     folders: string[]
@@ -218,8 +218,7 @@ export default function MangaNarratorPage() {
         <div className="p-6 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">📚 Manga Narrator: Load Chapter</h1>
 
-
-            <OCRInputSection
+            <OCRInputSectionClient
                 onOcrComplete={setOcrRunId}
                 onSelectImage={setSelectedImage}
             />

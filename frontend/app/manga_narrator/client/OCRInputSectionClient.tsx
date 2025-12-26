@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import InputPathBreadcrumb from './InputPathBreadcrumb'
-import RunOCRButton from './RunOCRButton'
-import FolderBrowser from './input_section/FolderBrowser'
-import { OCR_STATUS, OcrStatus } from '../../shared/status_enums'
-import { MangaDirResponse, ImageEntry } from '../../types/manga_narrator_django_api'
+import InputPathBreadcrumb from '../components/ocr/InputPathBreadcrumb'
+import RunOCRButton from '../components/ocr/RunOCRButton'
+import FolderBrowser from '../components/ocr/input_section/FolderBrowser'
+import { OCR_STATUS, OcrStatus } from '../shared/status_enums'
+import { MangaDirResponse } from '../types/manga_narrator_django_api'
+import { callOCRapi } from '../server/callOCRapi'
+import { fetchDir } from '../server/fetchDir'
 
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 const OCR_API = process.env.NEXT_PUBLIC_OCR_API as string
@@ -13,15 +15,15 @@ const WSL_BASE = process.env.NEXT_PUBLIC_WSL_BASE as string
 const INPUT_ROOT = process.env.NEXT_PUBLIC_INPUT_ROOT || 'inputs'
 const OUTPUT_ROOT = process.env.NEXT_PUBLIC_OUTPUT_ROOT || 'outputs'
 
-interface OCRInputSectionProps {
+interface OCRInputSectionClientProps {
     onOcrComplete: (runId: string) => void
     onSelectImage: (image: string) => void
 }
 
-const OCRInputSection = ({
+const OCRInputSectionClient = ({
     onOcrComplete,
     onSelectImage
-}: OCRInputSectionProps) => {
+}: OCRInputSectionClientProps) => {
     const [relativeInputPath, setRelativeInputPath] = useState<string>('')
     const [pathHistory, setPathHistory] = useState<string[]>([])
     const [ocrStatus, setOcrStatus] =
@@ -50,14 +52,7 @@ const OCRInputSection = ({
                 `${WSL_BASE}/${getInputPath(relativeInputPath)}`
             )
 
-            const res = await fetch(`${OCR_API}/ocr/folder`, {
-                method: 'POST',
-                body: formData,
-            })
-
-            if (!res.ok) throw new Error('OCR failed')
-
-            const data = await res.json()
+            const data = await callOCRapi(formData);
             onOcrComplete(data.run_id)
             setOcrStatus(OCR_STATUS.DONE)
         } catch (err) {
@@ -77,15 +72,11 @@ const OCRInputSection = ({
     }
 
     useEffect(() => {
-        fetch(`${BACKEND_API}/api/manga/dir/?path=${relativeInputPath}`)
-            .then(res => {
-                if (!res.ok) throw new Error('Bad response')
-                return res.json()
-            })
-            .then((data: MangaDirResponse) => setDirData(data))
+        fetchDir(relativeInputPath)
+            .then(data => setDirData(data))
             .catch(err => {
-                console.error('Failed to fetch dir:', err)
-                setDirData(null)  // fallback
+                console.error("Failed to load dir:", err)
+                setDirData(null) // fallback
             })
     }, [relativeInputPath])
 
@@ -121,4 +112,4 @@ const OCRInputSection = ({
     )
 }
 
-export default OCRInputSection
+export default OCRInputSectionClient

@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react"
-import { Dispatch, SetStateAction } from "react"
 import { MangaDirResponse, ImageEntry } from "@/app/manga_narrator/types/manga_narrator_django_api"
 
 interface FolderBrowserProps {
