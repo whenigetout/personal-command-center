@@ -6,9 +6,9 @@ class ImageEntry(BaseModel):
     relative_path: str
     url: str
 
-class MangaDirResponse(BaseModel):
+class MangaInputDirResponse(BaseModel):
     folders: List[str]
-    images: List[ImageEntry]
+    files: List[ImageEntry]
 
 class FileEntry(BaseModel):
     name: str

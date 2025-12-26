@@ -2,15 +2,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Pytest: Current File",
+            "name": "Django: Runserver",
             "type": "debugpy",
             "request": "launch",
-            "module": "pytest",
+            "program": "${workspaceFolder}/manage.py",
             "args": [
-                "${file}"
+                "runserver",
+                "0.0.0.0:9000"
             ],
-            "console": "integratedTerminal",
-            "justMyCode": true
+            "django": true,
+            "justMyCode": true,
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "corecenter.settings",
+                "PYTHONUNBUFFERED": "1"
+            }
         }
     ]
 }

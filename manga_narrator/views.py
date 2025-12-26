@@ -28,7 +28,7 @@ def manga_dir_view(request):
         return JsonResponse({'error': 'Path does not exist'}, status=404)
 
     folders = []
-    images = []
+    files = []
 
     for entry in os.scandir(target_path):
         if entry.is_dir():
@@ -36,7 +36,7 @@ def manga_dir_view(request):
         elif entry.is_file() and entry.name.lower().endswith(('.jpg', '.png', '.jpeg')):
             rel_image_path = f"{rel_path}/{entry.name}" if rel_path else entry.name
 
-            images.append(
+            files.append(
                 ImageEntry(
                     name=entry.name,
                     relative_path=rel_image_path,
@@ -44,9 +44,9 @@ def manga_dir_view(request):
                 )
             )
 
-    response = MangaDirResponse(
+    response = MangaInputDirResponse(
         folders=folders,
-        images=images
+        files=files
     )
 
     return JsonResponse(response.model_dump(), safe=False)
@@ -74,7 +74,7 @@ def manga_output_dir_view(request):
             rel_file_path = f"{rel_path}/{entry.name}" if rel_path else entry.name
 
             files.append(
-                ImageEntry(
+                FileEntry(
                     name=entry.name,
                     relative_path=rel_file_path,
                     url=f"/api/manga/image/?path={rel_file_path}"

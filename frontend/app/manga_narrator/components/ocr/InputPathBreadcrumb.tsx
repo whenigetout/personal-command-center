@@ -7,8 +7,10 @@ interface InputPathBreadcrumbProps {
 const InputPathBreadcrumb = ({
     currentPath,
     canGoBack,
-    onBack,
+    onBack
 }: InputPathBreadcrumbProps) => {
+    // Clear selected image/file if the callback is passed down
+
     return (
         <div className="mb-3">
             <p className="text-sm text-gray-400">
