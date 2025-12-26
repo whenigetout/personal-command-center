@@ -1,10 +1,10 @@
-import { MangaDirResponse } from "../types/manga_narrator_django_api"
+import { MangaInputDirResponse } from "../types/manga_narrator_django_api"
 
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 
-export const fetchDir = async (
+export const fetchInputDir = async (
     relativeInputPath: string
-): Promise<MangaDirResponse> => {
+): Promise<MangaInputDirResponse> => {
     const res = await fetch(
         `${BACKEND_API}/api/manga/dir/?path=${encodeURIComponent(relativeInputPath)}`
     )

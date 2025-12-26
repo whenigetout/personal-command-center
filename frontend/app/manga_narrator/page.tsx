@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import OcrPreview from './components/OcrPreview'
 import VideoPreviewClient from './client/VideoPreviewClient'
 import OCRInputSectionClient from './client/OCRInputSectionClient'
+import { OCROutputSectionClient } from './client/OCROutputSectionClient'
 
 interface DirResult {
     folders: string[]
@@ -223,57 +224,9 @@ export default function MangaNarratorPage() {
                 onSelectImage={setSelectedImage}
             />
             {/* {ocrRunId && <OCROutputSection runId={ocrRunId} />} */}
-
-
-            <div className="mt-10 border-t pt-6">
-                <h2 className="text-xl font-semibold">🗂 OCR Output Tree</h2>
-
-                {outputPathHistory.length > 0 && (
-                    <button
-                        onClick={goBackOutputFolder}
-                        className="mb-2 text-blue-600 underline"
-                    >
-                        ← Back to {outputPathHistory[outputPathHistory.length - 2] || 'root'}
-                    </button>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <h3 className="text-md font-semibold">📁 Folders</h3>
-                        <ul className="border p-2 h-64 overflow-y-auto text-sm">
-                            {outputTree.folders.map(folder => (
-                                <li key={folder}>
-                                    <button
-                                        onClick={() => goIntoOutputFolder(folder)}
-                                        className="text-blue-500 hover:underline"
-                                    >
-                                        {folder}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h3 className="text-md font-semibold">📄 JSON Files</h3>
-                        <ul className="border p-2 h-64 overflow-y-auto text-sm">
-                            {outputTree.files.map(file => {
-                                const fullPath = [...outputPathHistory, file].join('/')
-                                return (
-                                    <li key={file}>
-                                        <button
-                                            onClick={() => loadOcrFile(fullPath)}
-                                            className="text-green-400 hover:underline"
-                                        >
-                                            {file}
-                                        </button>
-                                    </li>
-                                )
-                            })}
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            <OCROutputSectionClient
+                onSelectJSONFile={setSelectedOcrPath}
+            />
 
             <VideoPreviewClient />
 

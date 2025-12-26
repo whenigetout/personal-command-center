@@ -5,9 +5,11 @@ import InputPathBreadcrumb from '../components/ocr/InputPathBreadcrumb'
 import RunOCRButton from '../components/ocr/RunOCRButton'
 import FolderBrowser from '../components/ocr/input_section/FolderBrowser'
 import { OCR_STATUS, OcrStatus } from '../shared/status_enums'
-import { MangaDirResponse } from '../types/manga_narrator_django_api'
 import { callOCRapi } from '../server/callOCRapi'
-import { fetchDir } from '../server/fetchDir'
+import { useDirectoryBrowser } from './hooks/useDirectoryBrowser'
+import { MangaInputDirResponse } from '../types/manga_narrator_django_api'
+import { ImageEntry } from '../types/manga_narrator_django_api'
+import { fetchInputDir } from '../server/fetchInputDir'
 
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 const OCR_API = process.env.NEXT_PUBLIC_OCR_API as string
@@ -24,23 +26,20 @@ const OCRInputSectionClient = ({
     onOcrComplete,
     onSelectImage
 }: OCRInputSectionClientProps) => {
-    const [relativeInputPath, setRelativeInputPath] = useState<string>('')
-    const [pathHistory, setPathHistory] = useState<string[]>([])
-    const [ocrStatus, setOcrStatus] =
-        useState<OcrStatus>(OCR_STATUS.IDLE)
-    const [dirData, setDirData] = useState<MangaDirResponse | null>(null)
+    const {
+        currentPath,
+        pathHistory,
+        dirData,
+        loading,
+        error,
+        goIntoFolder,
+        goBack
+    } = useDirectoryBrowser<ImageEntry>(fetchInputDir);
+
+    const [ocrStatus, setOcrStatus] = useState<OcrStatus>(OCR_STATUS.IDLE);
 
     const getInputPath = (sub = '') =>
         `${INPUT_ROOT}${sub ? '/' + sub : ''}`
-
-    const goBack = () => {
-        if (pathHistory.length === 0) return
-        const next = pathHistory.slice(0, -1)
-        setPathHistory(next)
-        setRelativeInputPath(next.join('/'))
-        //clear image selection
-        onSelectImage('');
-    }
 
     const triggerOcr = async () => {
         setOcrStatus(OCR_STATUS.PROCESSING)
@@ -49,7 +48,7 @@ const OCRInputSectionClient = ({
             const formData = new FormData()
             formData.append(
                 'input_path',
-                `${WSL_BASE}/${getInputPath(relativeInputPath)}`
+                `${WSL_BASE}/${getInputPath(currentPath)}`
             )
 
             const data = await callOCRapi(formData);
@@ -61,29 +60,10 @@ const OCRInputSectionClient = ({
         }
     }
 
-    const goIntoFolder = (folder: string) => {
-        const newHistory = [...pathHistory, folder]
-        const newPath = newHistory.join('/')
-
-        setPathHistory(newHistory);
-        setRelativeInputPath(newPath);
-        //clear image selection 
-        onSelectImage("");
-    }
-
-    useEffect(() => {
-        fetchDir(relativeInputPath)
-            .then(data => setDirData(data))
-            .catch(err => {
-                console.error("Failed to load dir:", err)
-                setDirData(null) // fallback
-            })
-    }, [relativeInputPath])
-
     return (
         <section>
             <InputPathBreadcrumb
-                currentPath={getInputPath(relativeInputPath)}
+                currentPath={getInputPath(currentPath)}
                 canGoBack={pathHistory.length > 0}
                 onBack={goBack}
             />
@@ -99,9 +79,11 @@ const OCRInputSectionClient = ({
 
             {/* folder browser ui */}
             <FolderBrowser
+                folderBrowserTitle="Input Folders"
+                imageBrowserTitle="Images"
                 dirData={dirData}
-                currentRelativePath={relativeInputPath}
-                OUTPUT_ROOT={OUTPUT_ROOT}
+                currentRelativePath={currentPath}
+                forbidden={OUTPUT_ROOT}
 
                 onEnterFolder={goIntoFolder}
                 onSelectImage={onSelectImage}
