@@ -6,7 +6,20 @@ from django.views.decorators.http import require_GET, require_POST
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import json
-from manga_narrator.contracts.manga_dir import *
+from pathlib import Path
+from manga_narrator.domain_models import OCRRun
+from manga_narrator.contracts.manga_dir import (
+    ImageEntry,
+    FileEntry,
+    MangaInputDirResponse,
+    MangaOutputDirResponse
+)
+from manga_narrator.contracts.manga_json_file import (
+    DialogueLineResponse,
+    OCRImageResponse,
+    OCRRunResponse
+)
+
 
 BASE_MANGA_DIR = settings.MANGA_RUNS_DIR
 
@@ -90,31 +103,52 @@ def manga_output_dir_view(request):
 
 @require_GET
 def manga_json_file_view(request):
-    rel_path = request.GET.get('path', '').strip()
-    rel_path = rel_path.lstrip('/')  # ← REMOVE leading slash if present
-    base_dir = settings.MANGA_OUTPUTS_DIR
-    target_path = os.path.normpath(os.path.join(base_dir, rel_path))
+    rel_path = request.GET.get("path", "").strip().lstrip("/")
+    base_dir = Path(settings.MANGA_OUTPUTS_DIR)
+    target_path = (base_dir / rel_path).resolve()
 
-    print("== DEBUG JSON FILE VIEW ==")
-    print("Requested:", rel_path)
-    print("Resolved:", target_path)
-    print("Exists?", os.path.exists(target_path))
+    # Safety check
+    if not str(target_path).startswith(str(base_dir)):
+        return JsonResponse({"error": "Invalid path"}, status=400)
 
-
-    if not target_path.startswith(os.path.normpath(base_dir)):
-        return JsonResponse({'error': 'Invalid path'}, status=400)
-
-    if not os.path.isfile(target_path):
-        return JsonResponse({'error': 'File does not exist'}, status=404)
+    if not target_path.is_file():
+        return JsonResponse({"error": "File does not exist"}, status=404)
 
     try:
-        with open(target_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        # 1️⃣ DOMAIN: parse + validate raw OCR json
+        ocr_run = OCRRun.from_json_file(target_path)
 
-        return JsonResponse({'results': json.loads(content)})
+        # 2️⃣ CONTRACT: map domain → API response
+        response = OCRRunResponse(
+            run_id=ocr_run.images[0].run_id if ocr_run.images else "",
+            images=[
+                OCRImageResponse(
+                    image_id=img.image_id,
+                    image_file_name=img.image_file_name,
+                    image_rel_path_from_root=img.image_rel_path_from_root,
+                    image_width=img.image_width,
+                    image_height=img.image_height,
+                    parsed_dialogue=[
+                        DialogueLineResponse(
+                            id=line.id,
+                            speaker=line.speaker,
+                            gender=line.gender,
+                            emotion=line.emotion,
+                            text=line.text,
+                        )
+                        for line in img.parsed_dialogue
+                    ],
+                )
+                for img in ocr_run.images
+            ],
+        )
+
+        return JsonResponse(response.model_dump(), safe=False)
+
     except Exception as e:
-        print(f"❌ Failed to read JSON at {target_path}: {e}")
-        return JsonResponse({'error': f'Failed to read JSON: {str(e)}'}, status=500)
+        print(f"❌ Failed to load OCR JSON {target_path}: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
+
 
 @require_GET
 def latest_tts_audio_view(request):
