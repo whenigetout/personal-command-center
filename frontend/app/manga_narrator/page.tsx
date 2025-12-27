@@ -6,6 +6,7 @@ import OCRInputSectionClient from './client/OCRInputSectionClient'
 import { OCROutputSectionClient } from './client/OCROutputSectionClient'
 import { constructFolderPath } from './utils/helpers'
 import { NarrationWorkbenchClient } from './client/NarrationWorkbenchClient'
+import { TestPageLink } from './dev/components/TestPageLink'
 
 // === Path Constants ===
 const IMAGE_ROOT = process.env.NEXT_PUBLIC_IMAGE_ROOT as string
@@ -18,6 +19,7 @@ export default function MangaNarratorPage() {
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">📚 Manga Narrator: Load Chapter</h1>
+            <TestPageLink />
 
             <OCRInputSectionClient
                 onSelectImage={setSelectedImage}

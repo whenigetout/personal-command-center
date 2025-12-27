@@ -53,7 +53,8 @@ const FolderBrowser = ({
                             <button onClick={() => onSelectImage(
                                 image.relative_path
                             )}>
-                                {image.name}
+                                {/* {image.name} */}
+                                {image.relative_path}
                             </button>
                         </li>
                     ))}
