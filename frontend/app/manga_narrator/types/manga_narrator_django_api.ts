@@ -3,6 +3,8 @@
  * Do not make direct changes to the file.
  */
 
+import { components } from "react-select"
+
 export type ImageEntry =
     components["schemas"]["ImageEntry"]
 
@@ -14,6 +16,15 @@ export type MangaInputDirResponse =
 
 export type MangaOutputDirResponse =
     components["schemas"]["MangaOutputDirResponse"]
+
+export type DialogueLineResponse =
+    components["schemas"]["DialogueLineResponse"];
+
+export type OCRImageResponse =
+    components["schemas"]["OCRImageResponse"]
+
+export type OCRRunResponse =
+    components["schemas"]["OCRRunResponse"]
 
 export interface paths {
     "/api/manga/dir/": {
@@ -88,6 +99,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/manga/json_file/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Load results from JSON file, which is the output from OCR API */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OCRRunResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -123,6 +170,41 @@ export interface components {
             relative_path: string;
             /** Url */
             url: string;
+        };
+        /** OCRRunResponse */
+        OCRRunResponse: {
+            /** Run Id */
+            run_id: string;
+            /** Images */
+            images: components["schemas"]["OCRImageResponse"][];
+        };
+        /** DialogueLineResponse */
+        DialogueLineResponse: {
+            /** Id */
+            id: number;
+            /** Speaker */
+            speaker: string;
+            /** Gender */
+            gender: string;
+            /** Emotion */
+            emotion: string;
+            /** Text */
+            text: string;
+        };
+        /** OCRImageResponse */
+        OCRImageResponse: {
+            /** Image Id */
+            image_id: string;
+            /** Image File Name */
+            image_file_name: string;
+            /** Image Rel Path From Root */
+            image_rel_path_from_root: string;
+            /** Parsed Dialogue */
+            parsed_dialogue: components["schemas"]["DialogueLineResponse"][];
+            /** Image Width */
+            image_width: number;
+            /** Image Height */
+            image_height: number;
         };
     };
     responses: never;
