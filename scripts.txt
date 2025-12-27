@@ -1,5 +1,5 @@
 //get the types from a different service
 npx openapi-typescript "path to openapi.json" -o types/video_api.ts 
-npx openapi-typescript http://localhost:9000/api/manga/openapi.json -o types/manga_narrator_django_api.ts
+npx openapi-typescript http://localhost:9000/api/manga/openapi.json -o frontend/app/manga_narrator/types/manga_narrator_django_api.ts
 //export project tree structure
 git ls-files | tree --fromfile > local_tmp/project_structure.txt

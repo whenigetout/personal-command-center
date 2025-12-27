@@ -1,6 +1,6 @@
 from .registry import register_endpoint
 from manga_narrator.contracts.manga_dir import MangaInputDirResponse, MangaOutputDirResponse
-from contracts.manga_json_file import OCRRunResponse
+from manga_narrator.contracts.manga_json_file import OCRRunResponse
 
 register_endpoint(
     name="manga_dir_view",
