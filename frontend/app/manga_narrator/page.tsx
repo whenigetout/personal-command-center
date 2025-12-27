@@ -26,7 +26,7 @@ export default function MangaNarratorPage() {
             />
 
             <NarrationWorkbenchClient
-                onSelectJSON={setSelectedOcrJson}
+                selectedOcrJson={selectedOcrJson}
             />
 
             <VideoPreviewClient

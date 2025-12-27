@@ -1,12 +1,21 @@
+import { OcrJsonResult } from "../components/narrationWorkBench/OcrJsonResult"
+import { MangaImage } from "../components/narrationWorkBench/MangaImage"
+import { DialogueLine } from "../components/narrationWorkBench/DialogueLine"
+import { TTSLine } from "../components/narrationWorkBench/TTSLine"
 
 interface NarrationWorkbenchClientProps {
-    onSelectJSON: (json: string) => void
+    selectedOcrJson: string | null
 }
 
 export const NarrationWorkbenchClient = ({
-    onSelectJSON
+    selectedOcrJson
 }: NarrationWorkbenchClientProps) => {
     return (
-        <div>NarrationWorkbenchClient</div>
+        <div className="mt-12 border-t pt-6">
+            NarrationWorkbenchClient
+            {/* use OcrPreview here somehow */}
+            <OcrJsonResult
+            />
+        </div>
     )
 }
