@@ -19,6 +19,7 @@ export default function MangaNarratorPage() {
 
     const {
         data: ocrJsonData,
+        dispatchEdit,
         loading,
         error
     } = useOcrJson(selectedOcrJsonPath)
@@ -37,6 +38,7 @@ export default function MangaNarratorPage() {
 
             {ocrJsonData && <NarrationWorkbenchClient
                 ocrJsonData={ocrJsonData}
+                dispatchEdit={dispatchEdit}
             />}
 
             <VideoPreviewClient

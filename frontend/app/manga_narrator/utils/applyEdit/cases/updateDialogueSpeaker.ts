@@ -12,14 +12,15 @@ export const updateDialogueSpeaker = (
         images: prev.images.map((img: OCRImageResponse, i) => {
             if (i !== imageIdx) return img // 🔒 SAME reference
 
-            return {
+            const updatedImg = {
                 ...img, // 🔒 new image object
-                dialogue_lines: img.parsed_dialogue.map((dlg: DialogueLineResponse, j) =>
+                parsed_dialogue: img.parsed_dialogue.map((dlg: DialogueLineResponse, j) =>
                     j === dlgIdx
                         ? { ...dlg, speaker } // 🔥 ONLY THIS LINE CHANGES
                         : dlg // 🔒 SAME reference
                 ),
             }
+            return updatedImg
         }),
     }
 }

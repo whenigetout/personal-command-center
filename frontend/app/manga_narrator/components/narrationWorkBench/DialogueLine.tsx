@@ -6,19 +6,28 @@ import {
     TTSLine
 } from "./DialogueLIneParts"
 import { DialogueLineResponse } from "../../types/manga_narrator_django_api"
+import { EditAction } from "../../types/EditActionType"
 
 interface DialogueLineProps {
     dlgLine: DialogueLineResponse
-    onEdit: (updates: Partial<DialogueLineResponse>) => void
+    imageIdx: number
+    dlgIdx: number
+    dispatchEdit: (action: EditAction) => void
 }
+
 export const DialogueLine = ({
     dlgLine,
-    onEdit
+    imageIdx,
+    dlgIdx,
+    dispatchEdit
 }: DialogueLineProps) => {
     return (
         <div className="border m-4">{dlgLine.text}
             <Speaker
                 speaker={dlgLine.speaker}
+                imageIdx={imageIdx}
+                dlgIdx={dlgIdx}
+                dispatchEdit={dispatchEdit}
             />
             <Gender
             />
