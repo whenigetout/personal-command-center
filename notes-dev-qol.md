@@ -143,3 +143,32 @@ Skip it if you don’t care.
 - `git push` → allowed anytime
     
 - `git rebase` → polish, optional
+
+## FAST COMMIT
+
+git config --global alias.ac "!git add . && git commit -m"
+```
+
+Verify:
+
+`git config --global --get alias.ac`
+
+Expected output:
+
+`!git add . && git commit -m`
+
+
+`git ac "short commit message"`
+
+Equivalent to:
+
+`git add . && git commit -m "short commit message"`
+
+Includes:
+
+- modified files
+    
+- new files
+    
+
+This is the **safe default** during heavy refactors.

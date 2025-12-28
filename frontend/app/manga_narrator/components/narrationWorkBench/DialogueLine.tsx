@@ -1,13 +1,18 @@
 import { TTSLine } from "./TTSLine"
+import { DialogueLineResponse } from "../../types/manga_narrator_django_api"
 
-export const DialogueLine = () => {
+interface DialogueLineProps {
+    dlgLine: DialogueLineResponse
+}
+export const DialogueLine = ({
+    dlgLine
+}: DialogueLineProps) => {
     return (
-        <div className="border m-4">DialogueLine
+        <div className="border m-4">{dlgLine.text}
             <ul>
                 <TTSLine
                 />
-                <TTSLine
-                />
+
             </ul>
         </div>
     )

@@ -143,6 +143,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'E:/pcc_shared/manga_narrator_runs'
 MANGA_RUNS_DIR = os.environ.get("MANGA_RUNS_DIR", "E:/pcc_shared/manga_narrator_runs")
-MANGA_INPUTS_DIR = "E:/PCC_SHARED/MANGA_NARRATOR_RUNS/inputs"
-MANGA_OUTPUTS_DIR = "E:/PCC_SHARED/MANGA_NARRATOR_RUNS/outputs"
-MANGA_INPUTS_DIR = os.path.join(MANGA_RUNS_DIR, "inputs")
+MANGA_RUNS_DIR = Path(os.environ.get(
+    "MANGA_RUNS_DIR",
+    "E:/pcc_shared/manga_narrator_runs"
+)).resolve()
+
+MANGA_INPUTS_DIR = MANGA_RUNS_DIR / "inputs"
+MANGA_OUTPUTS_DIR = MANGA_RUNS_DIR / "outputs"

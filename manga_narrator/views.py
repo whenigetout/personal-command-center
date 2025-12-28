@@ -104,7 +104,7 @@ def manga_output_dir_view(request):
 @require_GET
 def manga_json_file_view(request):
     rel_path = request.GET.get("path", "").strip().lstrip("/")
-    base_dir = Path(settings.MANGA_OUTPUTS_DIR)
+    base_dir = Path(settings.MANGA_OUTPUTS_DIR).resolve()
     target_path = (base_dir / rel_path).resolve()
 
     # Safety check

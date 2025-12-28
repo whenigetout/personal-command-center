@@ -6,12 +6,14 @@ import FolderBrowser from "../components/ocr/input_section/FolderBrowser"
 import { constructFolderPath } from "../utils/helpers"
 
 interface OCROutputSectionClientProps {
+    onSelectJson: (path: string) => void
 }
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 const INPUT_ROOT = process.env.NEXT_PUBLIC_INPUT_ROOT || 'inputs'
 const OUTPUT_ROOT = process.env.NEXT_PUBLIC_OUTPUT_ROOT || 'outputs'
 
 export const OCROutputSectionClient = ({
+    onSelectJson
 }: OCROutputSectionClientProps) => {
 
     const {
@@ -29,7 +31,10 @@ export const OCROutputSectionClient = ({
             <InputPathBreadcrumb
                 currentPath={constructFolderPath(OUTPUT_ROOT, currentPath)}
                 canGoBack={pathHistory.length > 0}
-                onBack={goBack}
+                onBack={() => {
+                    goBack();
+                    onSelectJson('');
+                }}
             />
 
             {/* folder browser ui */}
@@ -41,7 +46,7 @@ export const OCROutputSectionClient = ({
                 forbidden={INPUT_ROOT}
 
                 onEnterFolder={goIntoFolder}
-                onSelectImage={() => { }}
+                onSelectImage={onSelectJson}
             />
 
         </section>
