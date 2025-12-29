@@ -1,9 +1,7 @@
-import { DialogueLineResponse } from "./manga_narrator_django_api"
+import { DialogueLineResponse } from "./manga_narrator_django_api_types"
 
 export const EditActionType = {
-    Dialogue_speaker: "dialogue_speaker",
-    DialogueText: "dialogueText",
-    TTS: "tts",
+    Dialogue_update: "dialogue_update",
 } as const
 
 export type EditActionType =
@@ -12,10 +10,10 @@ export type EditActionType =
 
 export type EditAction =
     | {
-        type: typeof EditActionType.Dialogue_speaker
+        type: typeof EditActionType.Dialogue_update
         imageIdx: number
         dlgIdx: number
-        speaker: string
+        updates: Partial<DialogueLineResponse>
     }
 //   | {
 //       type: typeof EditActionType.DialogueText

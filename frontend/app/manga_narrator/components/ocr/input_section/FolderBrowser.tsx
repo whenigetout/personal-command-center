@@ -1,4 +1,4 @@
-import { MangaInputDirResponse } from "@/app/manga_narrator/types/manga_narrator_django_api"
+import { MangaInputDirResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
 interface FolderBrowserProps {
     folderBrowserTitle: string
     imageBrowserTitle: string

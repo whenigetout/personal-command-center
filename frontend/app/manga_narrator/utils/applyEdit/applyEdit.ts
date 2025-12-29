@@ -1,6 +1,6 @@
-import { OCRRunResponse } from "../../types/manga_narrator_django_api"
+import { OCRRunResponse } from "../../types/manga_narrator_django_api_types"
 import { EditAction, EditActionType } from "../../types/EditActionType"
-import { updateDialogueSpeaker } from "./cases/updateDialogueSpeaker"
+import { updateDialogueLine } from "./cases/updateDialogueLine"
 
 export function applyEdit(
     prev: OCRRunResponse,
@@ -8,8 +8,8 @@ export function applyEdit(
 ): OCRRunResponse {
 
     switch (action.type) {
-        case EditActionType.Dialogue_speaker:
-            return updateDialogueSpeaker(prev, action)
+        case EditActionType.Dialogue_update:
+            return updateDialogueLine(prev, action)
 
         default:
             return prev

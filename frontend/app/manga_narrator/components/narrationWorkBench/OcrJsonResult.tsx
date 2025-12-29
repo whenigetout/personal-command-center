@@ -1,5 +1,5 @@
 import { MangaImage } from "./MangaImage"
-import { OCRRunResponse } from "../../types/manga_narrator_django_api"
+import { OCRRunResponse } from "../../types/manga_narrator_django_api_types"
 import { EditAction } from "../../types/EditActionType"
 
 interface OcrJsonResultProps {

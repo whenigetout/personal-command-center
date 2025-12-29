@@ -1,6 +1,6 @@
 import { useDirectoryBrowser } from "./hooks/useDirectoryBrowser"
 import { fetchOutputDir } from "../server/fetchOutputDir"
-import { FileEntry } from "../types/manga_narrator_django_api"
+import { FileEntry } from "../types/manga_narrator_django_api_types"
 import InputPathBreadcrumb from "../components/ocr/InputPathBreadcrumb"
 import FolderBrowser from "../components/ocr/input_section/FolderBrowser"
 import { constructFolderPath } from "../utils/helpers"

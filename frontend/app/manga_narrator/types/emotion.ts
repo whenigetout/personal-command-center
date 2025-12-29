@@ -1,9 +1,3 @@
-// For Gender:
-export const genderOptions = [
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" },
-    { value: "unknown", label: "Unknown" },
-];
 // For Emotion:
 export const emotionOptions = [
     { value: "neutral", label: "Neutral" },
@@ -18,4 +12,13 @@ export const emotionOptions = [
     { value: "playful", label: "Playful" },
     { value: "serious", label: "Serious" },
     { value: "calm", label: "Calm" },
-];
+] as const;
+
+export type Emotion = typeof emotionOptions[number]["value"]
+export type EmotionOption = typeof emotionOptions[number]
+
+export const isEmotion = (value: unknown): value is Emotion =>
+    emotionOptions.some(o => o.value === value)
+
+export const normalizeEmotion = (value: unknown): Emotion =>
+    isEmotion(value) ? value : "neutral"

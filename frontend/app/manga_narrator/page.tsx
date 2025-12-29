@@ -36,6 +36,17 @@ export default function MangaNarratorPage() {
                 onSelectJson={setSelectedOcrJsonPath}
             />
 
+            {
+                ocrJsonData && <pre>
+                    <p>1st img 2nd dialogue</p>
+                    <p>speaker: {ocrJsonData.images[0].parsed_dialogue[1].speaker}</p>
+                    <p>text: {ocrJsonData.images[0].parsed_dialogue[1].text}</p>
+                    <p>gender: {ocrJsonData.images[0].parsed_dialogue[1].gender}</p>
+                    <p>emotion: {ocrJsonData.images[0].parsed_dialogue[1].emotion}</p>
+
+                </pre>
+            }
+
             {ocrJsonData && <NarrationWorkbenchClient
                 ocrJsonData={ocrJsonData}
                 dispatchEdit={dispatchEdit}

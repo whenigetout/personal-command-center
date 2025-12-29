@@ -1,4 +1,4 @@
-import { OCRRunResponse } from "../types/manga_narrator_django_api";
+import { OCRRunResponse } from "../types/manga_narrator_django_api_types";
 
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 

@@ -1,11 +1,11 @@
 import { EditAction } from "@/app/manga_narrator/types/EditActionType"
-import { OCRRunResponse, OCRImageResponse, DialogueLineResponse } from "@/app/manga_narrator/types/manga_narrator_django_api"
+import { OCRRunResponse, OCRImageResponse, DialogueLineResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
 
-export const updateDialogueSpeaker = (
+export const updateDialogueLine = (
     prev: OCRRunResponse,
     action: EditAction
 ) => {
-    const { imageIdx, dlgIdx, speaker } = action
+    const { imageIdx, dlgIdx, updates } = action
 
     return {
         ...prev, // 🔒 new ocrrun object (expected)
@@ -16,7 +16,7 @@ export const updateDialogueSpeaker = (
                 ...img, // 🔒 new image object
                 parsed_dialogue: img.parsed_dialogue.map((dlg: DialogueLineResponse, j) =>
                     j === dlgIdx
-                        ? { ...dlg, speaker } // 🔥 ONLY THIS LINE CHANGES
+                        ? { ...dlg, ...updates } // 🔥 ONLY THIS LINE CHANGES
                         : dlg // 🔒 SAME reference
                 ),
             }

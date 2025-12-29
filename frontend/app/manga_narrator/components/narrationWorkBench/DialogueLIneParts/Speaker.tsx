@@ -12,7 +12,6 @@ export const Speaker = ({
     dlgIdx,
     dispatchEdit
 }: SpeakerProps) => {
-    console.log("Speaker render, speaker =", speaker)
     return (
         <div>Speaker
             <input
@@ -20,10 +19,10 @@ export const Speaker = ({
                 value={speaker}
                 onChange={(e) => {
                     dispatchEdit({
-                        type: EditActionType.Dialogue_speaker,
+                        type: EditActionType.Dialogue_update,
                         imageIdx: imageIdx,
                         dlgIdx: dlgIdx,
-                        speaker: e.target.value
+                        updates: { speaker: e.target.value }
                     })
                 }}
             />

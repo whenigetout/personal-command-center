@@ -7,7 +7,7 @@ import FolderBrowser from '../components/ocr/input_section/FolderBrowser'
 import { OCR_STATUS, OcrStatus } from '../shared/status_enums'
 import { callOCRapi } from '../server/callOCRapi'
 import { useDirectoryBrowser } from './hooks/useDirectoryBrowser'
-import { ImageEntry } from '../types/manga_narrator_django_api'
+import { ImageEntry } from '../types/manga_narrator_django_api_types'
 import { fetchInputDir } from '../server/fetchInputDir'
 import { constructFolderPath } from '../utils/helpers'
 

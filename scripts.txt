@@ -2,6 +2,9 @@
 npx openapi-typescript "path to openapi.json" -o types/video_api.ts 
 
 //generate openapi json types for frontend, run this from project root
-cd frontend\app\manga_narrator && npx openapi-typescript http://localhost:9000/api/manga/openapi.json -o types/manga_narrator_django_api.ts
+    //from django backend
+cd frontend\app\manga_narrator && npx openapi-typescript http://localhost:9000/api/manga/openapi.json -o types/manga_narrator_django_api_types.ts
+    //from tts backend
+cd frontend\app\manga_narrator && npx openapi-typescript http://localhost:7861/openapi.json -o types/tts_api_types.ts
 //export project tree structure
 git ls-files | tree --fromfile > local_tmp/project_structure.txt

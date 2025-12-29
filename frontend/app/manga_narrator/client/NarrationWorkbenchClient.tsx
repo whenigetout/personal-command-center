@@ -1,5 +1,5 @@
 import { OcrJsonResult } from "../components/narrationWorkBench/OcrJsonResult"
-import { OCRRunResponse } from "../types/manga_narrator_django_api"
+import { OCRRunResponse } from "../types/manga_narrator_django_api_types"
 import { EditAction } from "../types/EditActionType"
 
 interface NarrationWorkbenchClientProps {

@@ -1,6 +1,7 @@
 import React, { forwardRef, useRef, useEffect, useImperativeHandle } from 'react';
 import TtsLine from './TtsLine';
-import { genderOptions, emotionOptions } from '../shared/enums'
+import { genderOptions } from '../types/gender'
+import { emotionOptions } from '../types/emotion';
 import Select from "react-select";
 
 interface DialogueEntry {

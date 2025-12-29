@@ -151,14 +151,10 @@ export default function MangaNarratorPage() {
                 const parsed = JSON.parse(text)
                 validData = Array.isArray(parsed) ? parsed : parsed?.results || []
                 label = file.name
-                console.log("file")
-                console.log(file)
             }
 
             setSelectedOcrPath(label)
             setSelectedOcrData(validData)
-            console.log("-------data 'validData' from loadocrjsondata-----");
-            console.log(validData);
 
         } catch (error) {
             console.error('Error loading OCR JSON:', error)

@@ -1,5 +1,5 @@
 import { DialogueLine } from "./DialogueLine"
-import { OCRImageResponse } from "../../types/manga_narrator_django_api"
+import { OCRImageResponse } from "../../types/manga_narrator_django_api_types"
 import { EditAction } from "../../types/EditActionType"
 
 interface MangaImageProps {
