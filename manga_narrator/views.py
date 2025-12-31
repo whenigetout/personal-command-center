@@ -19,6 +19,7 @@ from manga_narrator.contracts.manga_json_file import (
     OCRImageResponse,
     OCRRunResponse
 )
+from manga_narrator.contracts.manga_latest_audio import LatestTTSResponse
 
 
 BASE_MANGA_DIR = settings.MANGA_RUNS_DIR
@@ -152,52 +153,99 @@ def manga_json_file_view(request):
 
 @require_GET
 def latest_tts_audio_view(request):
-    rel_path = request.GET.get('path', '').strip()
-    base_dir = settings.MANGA_OUTPUTS_DIR
-    target_path = os.path.normpath(os.path.join(base_dir, rel_path))
+    """
+    Returns the latest generated TTS audio file.
+    Always returns a consistent JSON response.
+    """
 
-    if not target_path.startswith(os.path.normpath(base_dir)):
-        return JsonResponse({'error': 'Invalid path'}, status=400)
+    try:
+        rel_path = request.GET.get("path", "").strip().lstrip("/")
+        base_dir = Path(settings.MANGA_OUTPUTS_DIR).resolve()
+        target_path = (base_dir / rel_path).resolve()
+        # tts_output_root = Path(settings.MEDIA_ROOT) / "tts_outputs"
 
-    if not os.path.exists(target_path) or not os.path.isdir(target_path):
-        return JsonResponse({'error': 'Folder does not exist'}, status=404)
+        # Safety check
+        if not str(target_path).startswith(str(base_dir)):
+            response = LatestTTSResponse(
+                    status="error",
+                    audio_path=None,
+                    error="Invalid path"
+                )
+            return JsonResponse(
+                response.model_dump(),
+                safe=False,
+                status=400
+            )
 
-    wav_files = [
-        f for f in os.listdir(target_path)
-        if f.lower().endswith(".wav") and f.startswith("v")
-    ]
+        if not target_path.exists() or not target_path.is_dir():
+            response = LatestTTSResponse(
+                    status="error",
+                    audio_path=None,
+                    error="TTS output directory does not exist"
+                )
+            return JsonResponse(
+                response.model_dump(),
+                safe=False,
+                status=404
+            )
+        
+        def extract_version(fname):
+            try:
+                ver = fname.split("__")[0]
+                return int(ver.replace("v", ""))
+            except:
+                return -1
 
-    def extract_version(fname):
-        try:
-            ver = fname.split("__")[0]
-            return int(ver.replace("v", ""))
-        except:
-            return -1
+        audio_files = sorted(
+            (
+                p for p in target_path.glob("*.wav")
+                if p.name.startswith("v") and extract_version(p.name) >= 0
+            ),
+            key=lambda p: extract_version(p.name),
+            reverse=True
+        )
 
-    wav_files.sort(key=extract_version, reverse=True)
+        if not audio_files:
+            response = LatestTTSResponse(
+                    status="error",
+                    audio_path=None,
+                    error="No TTS audio files found"
+                )
+            return JsonResponse(
+                response.model_dump(),
+                safe=False,
+                status=404
+            )
 
-    if not wav_files:
-        return JsonResponse({
-            "latest": None,
-            "count": 0,
-            "full_path": None,
-            "url": None
-        })
+        latest_audio = audio_files[0]
 
-    latest_file = wav_files[0]
-    full_path = os.path.join(target_path, latest_file)
+        # Convert to relative path if needed by frontend
+        audio_path = str(latest_audio.relative_to(base_dir))
+        response = LatestTTSResponse(
+                status="success",
+                audio_path=Path(audio_path).as_posix(),
+                error=None
+            )
 
-    # Compute path relative to MEDIA_ROOT, since /media/ points to MEDIA_ROOT
-    media_rel_path = os.path.relpath(full_path, settings.MEDIA_ROOT).replace("\\", "/")
-    relative_url = f"{settings.MEDIA_URL}{media_rel_path}"
-    absolute_url = request.build_absolute_uri(relative_url)
+        return JsonResponse(
+            response.model_dump(),
+                safe=False,
+            status=200
+        )
 
-    return JsonResponse({
-        "latest": latest_file,
-        "count": len(wav_files),
-        "full_path": full_path,
-        "url": absolute_url
-    })
+    except Exception as e:
+        # --- HARD FAILURE SAFETY NET ---
+        response = LatestTTSResponse(
+                status="error",
+                audio_path=None,
+                error=str(e)
+            )
+        return JsonResponse(
+            response.model_dump(),
+            safe=False,
+            status=500
+        )
+
 
 @csrf_exempt
 @require_POST

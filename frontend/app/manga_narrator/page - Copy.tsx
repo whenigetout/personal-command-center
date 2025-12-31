@@ -23,7 +23,7 @@ const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
 const OCR_API = process.env.NEXT_PUBLIC_OCR_API as string
 const VIDEO_API = process.env.NEXT_PUBLIC_VIDEO_API as string
 
-const IMAGE_ROOT = process.env.NEXT_PUBLIC_IMAGE_ROOT as string
+const IMAGE_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
 const WSL_BASE = process.env.NEXT_PUBLIC_WSL_BASE as string
 
 // === Path Constants ===

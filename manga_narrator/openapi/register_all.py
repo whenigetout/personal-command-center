@@ -1,6 +1,7 @@
 from .registry import register_endpoint
 from manga_narrator.contracts.manga_dir import MangaInputDirResponse, MangaOutputDirResponse
 from manga_narrator.contracts.manga_json_file import OCRRunResponse
+from manga_narrator.contracts.manga_latest_audio import LatestTTSResponse
 
 register_endpoint(
     name="manga_dir_view",
@@ -24,4 +25,12 @@ register_endpoint(
     method="GET",
     response_model=OCRRunResponse,
     summary="Load results from JSON file, which is the output from OCR API",
+)
+
+register_endpoint(
+    name="latest_tts_audio_view",
+    path="/api/manga/latest_audio/",
+    method="GET",
+    response_model=LatestTTSResponse,
+    summary="Load LATEST version audio file generated from TTS API",
 )

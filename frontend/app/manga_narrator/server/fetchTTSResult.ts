@@ -13,10 +13,6 @@ export const fetchTTSResult = async (
     }
     )
 
-    if (!res.ok) {
-        throw new Error("Bad response")
-    }
-
     const json = await res.json()
     return TTSDialogueResponseSchema.parse(json)
 

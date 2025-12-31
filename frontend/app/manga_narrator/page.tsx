@@ -10,7 +10,7 @@ import { TestPageLink } from './dev/components/TestPageLink'
 import { useOcrJson } from './client/hooks/useOcrJson'
 
 // === Path Constants ===
-const IMAGE_ROOT = process.env.NEXT_PUBLIC_IMAGE_ROOT as string
+const MEDIA_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
 const INPUT_ROOT = process.env.NEXT_PUBLIC_INPUT_ROOT || 'inputs'
 
 export default function MangaNarratorPage() {
@@ -62,7 +62,7 @@ export default function MangaNarratorPage() {
                     </h2>
 
                     <img
-                        src={`${IMAGE_ROOT}/${constructFolderPath(INPUT_ROOT)}/${selectedImagePath}`}
+                        src={`${MEDIA_ROOT}/${constructFolderPath(INPUT_ROOT)}/${selectedImagePath}`}
                         alt="preview"
                         className="max-w-full border mt-2"
                         onError={(e) => {

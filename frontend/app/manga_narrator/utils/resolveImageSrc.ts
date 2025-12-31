@@ -2,10 +2,10 @@ export function resolveImageSrc(
     relDir: string,
     filename: string
 ): string {
-    const BASE = process.env.NEXT_PUBLIC_IMAGE_ROOT_INPUTS;
+    const BASE = process.env.NEXT_PUBLIC_MEDIA_ROOT_INPUTS;
 
     if (!BASE) {
-        throw new Error("NEXT_PUBLIC_IMAGE_ROOT_INPUTS is not set");
+        throw new Error("NEXT_PUBLIC_MEDIA_ROOT_INPUTS is not set");
     }
 
     const base = BASE.replace(/\/$/, "");

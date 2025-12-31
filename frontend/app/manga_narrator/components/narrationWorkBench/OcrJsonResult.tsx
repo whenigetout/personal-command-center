@@ -15,6 +15,7 @@ export const OcrJsonResult = ({
             {jsonResponse.images.map((image, imageIdx) =>
                 <MangaImage
                     key={image.image_id}
+                    run_id={jsonResponse.run_id}
                     image={image}
                     imageIdx={imageIdx}
                     dispatchEdit={dispatchEdit}
