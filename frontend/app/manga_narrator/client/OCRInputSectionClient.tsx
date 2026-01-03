@@ -1,67 +1,62 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import InputPathBreadcrumb from '../components/ocr/InputPathBreadcrumb'
-import RunOCRButton from '../components/ocr/RunOCRButton'
-import FolderBrowser from '../components/ocr/input_section/FolderBrowser'
+import InputPathBreadcrumb from '../components/file_browsers/InputPathBreadcrumb'
+import RunOCRButton from '../components/file_browsers/RunOCRButton'
+import FolderBrowser from '../components/file_browsers/FolderBrowser'
 import { OCR_STATUS, OcrStatus } from '../shared/status_enums'
 import { callOCRapi } from '../server/callOCRapi'
 import { useDirectoryBrowser } from './hooks/useDirectoryBrowser'
-import { ImageEntry } from '../types/manga_narrator_django_api_types'
-import { fetchInputDir } from '../server/fetchInputDir'
 import { constructFolderPath } from '../utils/helpers'
+import { MediaNamespace, MEDIA_NAMESPACES } from '../types/manga_narrator_django_api_types'
+import { MediaRef } from '../types/manga_narrator_django_api_types'
 
 const WSL_BASE = process.env.NEXT_PUBLIC_WSL_BASE as string
 const INPUT_ROOT = process.env.NEXT_PUBLIC_INPUT_ROOT || 'inputs'
 const OUTPUT_ROOT = process.env.NEXT_PUBLIC_OUTPUT_ROOT || 'outputs'
 
 interface OCRInputSectionClientProps {
-    onSelectImage: (image: string) => void
+    onSelectImage: (image: MediaRef | null) => void
 }
 
 const OCRInputSectionClient = ({
     onSelectImage
 }: OCRInputSectionClientProps) => {
     const {
-        currentPath,
-        pathHistory,
-        dirData,
-        loading,
-        error,
+        browserState,
         goIntoFolder,
         goBack
-    } = useDirectoryBrowser<ImageEntry>(fetchInputDir);
+    } = useDirectoryBrowser(MEDIA_NAMESPACES[0]);
 
     const [ocrStatus, setOcrStatus] = useState<OcrStatus>(OCR_STATUS.IDLE);
 
     const triggerOcr = async () => {
-        setOcrStatus(OCR_STATUS.PROCESSING)
+        // setOcrStatus(OCR_STATUS.PROCESSING)
 
-        try {
-            const formData = new FormData()
-            formData.append(
-                'input_path',
-                `${WSL_BASE}/${constructFolderPath(INPUT_ROOT, currentPath)}`
-            )
+        // try {
+        //     const formData = new FormData()
+        //     formData.append(
+        //         'input_path',
+        //         `${WSL_BASE}/${constructFolderPath(INPUT_ROOT, ""?.path)}`
+        //     )
 
-            const data = await callOCRapi(formData);
-            setOcrStatus(OCR_STATUS.DONE)
-        } catch (err) {
-            console.error(err)
-            setOcrStatus(OCR_STATUS.ERROR)
-        }
+        //     const data = await callOCRapi(formData);
+        //     setOcrStatus(OCR_STATUS.DONE)
+        // } catch (err) {
+        //     console.error(err)
+        //     setOcrStatus(OCR_STATUS.ERROR)
+        // }
     }
 
     return (
         <section>
             <InputPathBreadcrumb
-                currentPath={constructFolderPath(INPUT_ROOT, currentPath)}
-                canGoBack={pathHistory.length > 0}
+                browserState={browserState}
+                canGoBack={browserState.history.length > 0}
                 onBack={() => {
                     goBack();
-                    onSelectImage('');
+                    onSelectImage(null);
                 }}
-
             />
 
             <RunOCRButton status={ocrStatus} onRun={triggerOcr} />
@@ -77,9 +72,7 @@ const OCRInputSectionClient = ({
             <FolderBrowser
                 folderBrowserTitle="Input Folders"
                 imageBrowserTitle="Images"
-                dirData={dirData}
-                currentRelativePath={currentPath}
-                forbidden={OUTPUT_ROOT}
+                browserState={browserState}
 
                 onEnterFolder={goIntoFolder}
                 onSelectImage={onSelectImage}

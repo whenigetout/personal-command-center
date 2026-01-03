@@ -1,52 +1,86 @@
 import { useEffect, useState } from 'react'
+import { MediaRef } from '../../types/manga_narrator_django_api_types'
+import { MangaDirViewResponse } from '../../types/manga_narrator_django_api_types'
+import { BrowserState } from '../../types/BrowserState'
+import { fetchDir } from '../../server/fetchDir'
+import { MediaNamespace } from '../../types/manga_narrator_django_api_types'
 
-export interface DirListing<TFile> {
-    folders: string[]
-    files: TFile[]
-}
-
-export function useDirectoryBrowser<TFile>(
-    fetchDir: (path: string) => Promise<DirListing<TFile>>
+export function useDirectoryBrowser(
+    namespace: MediaNamespace
 ) {
-    const [pathHistory, setPathHistory] = useState<string[]>([])
-    const [currentPath, setCurrentPath] = useState<string>('')
-    const [dirData, setDirData] = useState<DirListing<TFile> | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    // default mediaRef obj, make strictly immutable
+    const default_mediaRef: MediaRef = Object.freeze({
+        namespace: namespace,
+        path: ""
+    })
 
-    function goIntoFolder(folder: string) {
-        const next = [...pathHistory, folder]
-        setPathHistory(next)
-        setCurrentPath(next.join('/'))
+    const [browserState, setBrowserState] = useState<BrowserState>({
+        currentDir: {
+            namespace: namespace,
+            path: ""
+        },
+        currentDirContents: null,
+        history: [],
+        loading: false,
+        error: null
+    })
+
+    function goIntoFolder(folder: MediaRef) {
+        setBrowserState(prev => ({
+            ...prev,
+            currentDir: folder,
+            history: [...(prev.history ?? []), folder]
+        }))
     }
 
     function goBack() {
-        if (pathHistory.length === 0) return
-        const next = pathHistory.slice(0, -1)
-        setPathHistory(next)
-        setCurrentPath(next.join('/'))
+        setBrowserState(prev => {
+            const history = prev.history ?? [];
+
+            if (history.length === 0) return prev;
+
+            const newHistory = history.slice(0, -1);
+            const newCurrentDir =
+                newHistory.at(-1) ?? default_mediaRef;
+
+            return {
+                ...prev,
+                currentDir: newCurrentDir,
+                history: newHistory,
+            };
+        });
     }
 
     useEffect(() => {
-        setLoading(true)
-        setError(null)
+        setBrowserState(prev => ({
+            ...prev,
+            loading: true,
+            error: null
+        }))
 
-        fetchDir(currentPath)
-            .then(setDirData)
+        const mediaRef: MediaRef = browserState.currentDir.path ? browserState.currentDir : default_mediaRef
+
+        fetchDir(mediaRef)
+            .then((data: MangaDirViewResponse) => {
+                setBrowserState(prev => ({
+                    ...prev,
+                    currentDirContents: data,
+                    loading: false
+                }))
+            })
             .catch(err => {
                 console.error(err)
-                setError('Failed to load directory')
-                setDirData(null)
+                setBrowserState(prev => ({
+                    ...prev,
+                    currentDirContents: null,
+                    loading: false,
+                    error: "Failed to load directory"
+                }))
             })
-            .finally(() => setLoading(false))
-    }, [currentPath])
+    }, [browserState.currentDir])
 
     return {
-        currentPath,
-        pathHistory,
-        dirData,
-        loading,
-        error,
+        browserState,
         goIntoFolder,
         goBack
     }

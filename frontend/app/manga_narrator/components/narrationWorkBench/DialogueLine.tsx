@@ -5,48 +5,30 @@ import {
     Speaker,
     TTSLine
 } from "./DialogueLIneParts"
-import { DialogueLineResponse } from "../../types/manga_narrator_django_api_types"
+import { PaddleDialogueLineResponse } from "../../types/manga_narrator_django_api_types"
 import { EditAction } from "../../types/EditActionType"
-import { normalizeGender } from "../../types/gender"
-import { normalizeEmotion } from "../../types/emotion"
-import { run } from "node:test"
+import { MediaRef } from "../../types/manga_narrator_django_api_types"
+import { Gender, Emotion } from "../../types/tts_api_types"
 
 interface DialogueLineProps {
     run_id: string
-    image_file_name: string
-    image_rel_path_from_root: string
-    dlgLine: DialogueLineResponse
+    image_ref: MediaRef
+    dlgLine: PaddleDialogueLineResponse
     imageIdx: number
     dlgIdx: number
+    emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
 }
 
 export const DialogueLine = ({
     run_id,
-    image_file_name,
-    image_rel_path_from_root,
+    image_ref,
     dlgLine,
     imageIdx,
     dlgIdx,
+    emotionOptions,
     dispatchEdit
 }: DialogueLineProps) => {
-
-    function joinPath(...parts: string[]) {
-        return parts
-            .filter(Boolean)
-            .map(p => p.replace(/\\/g, "/").replace(/^\/+|\/+$/g, ""))
-            .join("/")
-    }
-    const imageNameBase =
-        image_file_name.split("/").pop()?.replace(/\./g, "_") ??
-        "unknown_image"
-
-    const audioFolder = joinPath(
-        run_id,
-        image_rel_path_from_root,
-        imageNameBase,
-        `dialogue__${dlgLine.id}`
-    )
 
     return (
         <div className="border m-4">{dlgLine.text}
@@ -58,15 +40,16 @@ export const DialogueLine = ({
                 dispatchEdit={dispatchEdit}
             />
             <GenderDDL
-                gender={normalizeGender(dlgLine.gender)}
+                gender={dlgLine.gender}
                 imageIdx={imageIdx}
                 dlgIdx={dlgIdx}
                 dispatchEdit={dispatchEdit}
             />
             <EmotionDDL
-                emotion={normalizeEmotion(dlgLine.emotion)}
+                emotion={dlgLine.emotion}
                 imageIdx={imageIdx}
                 dlgIdx={dlgIdx}
+                emotionOptions={emotionOptions}
                 dispatchEdit={dispatchEdit}
             />
             <DialogueText
@@ -77,11 +60,10 @@ export const DialogueLine = ({
             />
 
             <TTSLine
-                audioFolder={audioFolder}
                 run_id={run_id}
-                image_file_name={image_file_name}
-                image_rel_path_from_root={image_rel_path_from_root}
+                image_ref={image_ref}
                 dlgLine={dlgLine}
+                emotionOptions={emotionOptions}
             />
 
         </div>

@@ -65,7 +65,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "http://localhost:3100",
 ]
 
 ROOT_URLCONF = 'corecenter.urls'
@@ -142,11 +142,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'E:/pcc_shared/manga_narrator_runs'
-MANGA_RUNS_DIR = os.environ.get("MANGA_RUNS_DIR", "E:/pcc_shared/manga_narrator_runs")
-MANGA_RUNS_DIR = Path(os.environ.get(
-    "MANGA_RUNS_DIR",
-    "E:/pcc_shared/manga_narrator_runs"
-)).resolve()
+MEDIA_NAMESPACES = {
+    "inputs": "inputs",
+    "outputs": "outputs",
+}
+MEDIA_NAMESPACE_KEYS = ("inputs", "outputs")
 
-MANGA_INPUTS_DIR = MANGA_RUNS_DIR / "inputs"
-MANGA_OUTPUTS_DIR = MANGA_RUNS_DIR / "outputs"

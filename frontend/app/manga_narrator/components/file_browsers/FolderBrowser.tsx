@@ -1,21 +1,18 @@
-import { MangaInputDirResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { MediaRef, mediaBasename } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { BrowserState } from "../../types/BrowserState"
 interface FolderBrowserProps {
     folderBrowserTitle: string
     imageBrowserTitle: string
-    dirData: MangaInputDirResponse | null
-    currentRelativePath: string
-    forbidden: string
+    browserState: BrowserState
 
-    onEnterFolder: (folder: string) => void
-    onSelectImage: (image: string) => void
+    onEnterFolder: (folder: MediaRef) => void
+    onSelectImage: (image: MediaRef) => void
 }
 
 const FolderBrowser = ({
     folderBrowserTitle,
     imageBrowserTitle,
-    dirData,
-    currentRelativePath,
-    forbidden,
+    browserState,
 
     onEnterFolder,
     onSelectImage
@@ -28,15 +25,15 @@ const FolderBrowser = ({
             <div>
                 <h2 className="text-lg font-semibold">📁 {folderBrowserTitle}</h2>
                 <ul className="border p-2 h-64 overflow-y-auto">
-                    {(dirData?.folders || []).map(folder => {
-                        if (currentRelativePath === '' && folder === forbidden) return null  // 👈 hide outputs at root
+                    {(browserState.currentDirContents?.folders ?? []).map(folder => {
+
                         return (
-                            <li key={folder}>
+                            <li key={folder.path}>
                                 <button
                                     onClick={() => onEnterFolder(folder)}
                                     className="text-blue-500 hover:underline"
                                 >
-                                    {folder}
+                                    {mediaBasename(folder)}
                                 </button>
                             </li>
                         )
@@ -48,13 +45,10 @@ const FolderBrowser = ({
             <div>
                 <h2 className="text-lg font-semibold">🖼️ {imageBrowserTitle}</h2>
                 <ul className="border p-2 h-64 overflow-y-auto">
-                    {(dirData?.files || []).map(image => (
-                        <li key={image.name}>
-                            <button onClick={() => onSelectImage(
-                                image.relative_path
-                            )}>
-                                {/* {image.name} */}
-                                {image.relative_path}
+                    {(browserState.currentDirContents?.files ?? []).map(file => (
+                        <li key={file.path}>
+                            <button onClick={() => onSelectImage(file)}>
+                                {mediaBasename(file)}
                             </button>
                         </li>
                     ))}

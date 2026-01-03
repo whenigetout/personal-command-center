@@ -1,11 +1,11 @@
-import { OCRRunResponse } from "../../types/manga_narrator_django_api_types"
+import { PaddleAugmentedOCRRunResponse } from "../../types/manga_narrator_django_api_types"
 import { EditAction, EditActionType } from "../../types/EditActionType"
 import { updateDialogueLine } from "./cases/updateDialogueLine"
 
 export function applyEdit(
-    prev: OCRRunResponse,
+    prev: PaddleAugmentedOCRRunResponse,
     action: EditAction
-): OCRRunResponse {
+): PaddleAugmentedOCRRunResponse {
 
     switch (action.type) {
         case EditActionType.Dialogue_update:

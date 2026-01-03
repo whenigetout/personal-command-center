@@ -1,8 +1,9 @@
 import { EditAction, EditActionType } from "@/app/manga_narrator/types/EditActionType"
-import { genderOptions, Gender, normalizeGender } from "@/app/manga_narrator/types/gender"
+// import { genderOptions, Gender, normalizeGender } from "@/app/manga_narrator/types/gender"
+import { Gender, GENDER_OPTIONS } from "@/app/manga_narrator/types/tts_api_types"
 
 interface GenderDDLProps {
-    gender: Gender
+    gender: string
     imageIdx: number
     dlgIdx: number
     dispatchEdit: (action: EditAction) => void
@@ -14,13 +15,12 @@ export const GenderDDL = ({
     dlgIdx,
     dispatchEdit
 }: GenderDDLProps) => {
-    const safeGender = normalizeGender(gender);
 
     return (
         <div>Gender:
             <select
                 className="basic-single w-56 text-black"
-                value={safeGender}
+                value={gender}
                 onChange={(e) =>
                     dispatchEdit({
                         type: EditActionType.Dialogue_update,
@@ -30,9 +30,9 @@ export const GenderDDL = ({
                     })
                 }
             >
-                {genderOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                        {opt.label}
+                {GENDER_OPTIONS.map((opt, idx) => (
+                    <option key={opt} value={opt}>
+                        {opt}
                     </option>
                 ))}
             </select>

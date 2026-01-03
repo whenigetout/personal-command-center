@@ -8,21 +8,24 @@ import { constructFolderPath } from './utils/helpers'
 import { NarrationWorkbenchClient } from './client/NarrationWorkbenchClient'
 import { TestPageLink } from './dev/components/TestPageLink'
 import { useOcrJson } from './client/hooks/useOcrJson'
+import { MediaRef, mediaBasename } from './types/manga_narrator_django_api_types'
+import { Emotion } from './types/tts_api_types'
 
 // === Path Constants ===
 const MEDIA_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
 const INPUT_ROOT = process.env.NEXT_PUBLIC_INPUT_ROOT || 'inputs'
 
 export default function MangaNarratorPage() {
-    const [selectedImagePath, setSelectedImagePath] = useState<string | null>(null)
-    const [selectedOcrJsonPath, setSelectedOcrJsonPath] = useState<string | null>(null)
+    const [selectedImage, setSelectedImage] = useState<MediaRef | null>(null)
+    const [selectedOcrJson, setSelectedOcrJson] = useState<MediaRef | null>(null)
 
     const {
         data: ocrJsonData,
+        emotionOptions,
         dispatchEdit,
         loading,
         error
-    } = useOcrJson(selectedOcrJsonPath)
+    } = useOcrJson(selectedOcrJson)
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
@@ -30,39 +33,30 @@ export default function MangaNarratorPage() {
             <TestPageLink />
 
             <OCRInputSectionClient
-                onSelectImage={setSelectedImagePath}
+                onSelectImage={setSelectedImage}
             />
             <OCROutputSectionClient
-                onSelectJson={setSelectedOcrJsonPath}
+                onSelectJson={setSelectedOcrJson}
             />
-
-            {
-                ocrJsonData && <pre>
-                    <p>1st img 2nd dialogue</p>
-                    <p>speaker: {ocrJsonData.images[0].parsed_dialogue[1].speaker}</p>
-                    <p>text: {ocrJsonData.images[0].parsed_dialogue[1].text}</p>
-                    <p>gender: {ocrJsonData.images[0].parsed_dialogue[1].gender}</p>
-                    <p>emotion: {ocrJsonData.images[0].parsed_dialogue[1].emotion}</p>
-
-                </pre>
-            }
 
             {ocrJsonData && <NarrationWorkbenchClient
                 ocrJsonData={ocrJsonData}
+                emotionOptions={emotionOptions}
                 dispatchEdit={dispatchEdit}
             />}
 
+            {/* 
             <VideoPreviewClient
-            />
+            /> */}
 
-            {selectedImagePath && (
+            {selectedImage && (
                 <div className="mt-6">
                     <h2 className="text-lg font-semibold">
-                        📷 Preview: {selectedImagePath}
+                        📷 Preview: {mediaBasename(selectedImage)}
                     </h2>
 
                     <img
-                        src={`${MEDIA_ROOT}/${constructFolderPath(INPUT_ROOT)}/${selectedImagePath}`}
+                        src={`${MEDIA_ROOT}/${selectedImage.namespace}/${selectedImage.path}`}
                         alt="preview"
                         className="max-w-full border mt-2"
                         onError={(e) => {

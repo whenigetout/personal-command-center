@@ -1,11 +1,14 @@
+import { MediaRef } from "../../types/manga_narrator_django_api_types"
+import { BrowserState } from "../../types/BrowserState"
+
 interface InputPathBreadcrumbProps {
-    currentPath: string
+    browserState: BrowserState
     canGoBack: boolean
     onBack: () => void
 }
 
 const InputPathBreadcrumb = ({
-    currentPath,
+    browserState,
     canGoBack,
     onBack
 }: InputPathBreadcrumbProps) => {
@@ -14,7 +17,7 @@ const InputPathBreadcrumb = ({
     return (
         <div className="mb-3">
             <p className="text-sm text-gray-400">
-                📂 Current folder: <code>{currentPath}</code>
+                📂 Current folder: <code>{browserState.currentDir.path}</code>
             </p>
 
             {canGoBack && (

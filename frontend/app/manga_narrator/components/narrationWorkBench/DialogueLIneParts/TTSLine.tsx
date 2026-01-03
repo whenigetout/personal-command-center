@@ -1,30 +1,28 @@
 import { useTTS } from "@/app/manga_narrator/client/hooks/useTTS"
-import { TTSDialogueRequest } from "@/app/manga_narrator/types/tts_api_types"
+import { GENDER_OPTIONS, TTSInput, Gender, Emotion, EmotionParams, Speaker } from "@/app/manga_narrator/types/tts_api_types"
 import { GenerateTTSButton } from "../../TTSLineParts/GenerateTTSButton"
-import { DialogueLineResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
-import { useEffect, useState } from "react"
+import { PaddleDialogueLineResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { MediaRef } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
 
 interface TTSLineProps {
-    audioFolder: string
     run_id: string
-    image_file_name: string
-    image_rel_path_from_root: string
-    dlgLine: DialogueLineResponse
+    image_ref: MediaRef
+    dlgLine: PaddleDialogueLineResponse
+    emotionOptions: Emotion[]
 }
 
 export const TTSLine = ({
-    audioFolder,
     run_id,
-    image_file_name,
-    image_rel_path_from_root,
-    dlgLine
+    image_ref,
+    dlgLine,
+    emotionOptions
 }: TTSLineProps) => {
 
     const {
         generateTTS,
         audioPath,
         useCustom,
-        SetUseCustom,
+        setUseCustom,
         cfg,
         setCfg,
         exg,
@@ -32,24 +30,41 @@ export const TTSLine = ({
         loading,
         error,
         reset
-    } = useTTS(audioFolder);
+    } = useTTS();
 
     const handleGenerateTTS = () => {
-        const req: TTSDialogueRequest = {
+        const gender: Gender = {
+            value: GENDER_OPTIONS.includes(dlgLine.gender as Gender["value"])
+                ? (dlgLine.gender as Gender["value"])
+                : "neutral"
+        }
+        const settings: EmotionParams = {
+            exaggeration: parseFloat(exg),
+            cfg: parseFloat(cfg)
+        }
+
+        const emotion: Emotion = {
+            name: emotionOptions.some(emo => emo.name === dlgLine.emotion)
+                ? dlgLine.emotion
+                : "neutral",
+            params: settings
+        }
+        const speaker: Speaker = {
+            name: dlgLine.speaker,
+            wav_file: "",
+            gender: gender
+        }
+
+        const req: TTSInput = {
             text: dlgLine.text,
-            gender: dlgLine.gender,
-            emotion: dlgLine.emotion,
-            speaker_id: dlgLine.speaker,
-            dialogue_id: dlgLine.id,
-
+            gender: gender,
+            emotion: emotion,
+            speaker: speaker,
+            image_ref: image_ref,
+            customSettings: useCustom ? settings : null,
             run_id: run_id,
-            image_rel_path_from_root: image_rel_path_from_root,
-            image_file_name: image_file_name,
-
-            // UI-owned fields
-            use_custom_params: useCustom,
-            cfg: useCustom ? parseFloat(cfg) : undefined,
-            exaggeration: useCustom ? parseFloat(exg) : undefined,
+            custom_filename: "",
+            dialogue_id: dlgLine.id
         }
         generateTTS(req);
     }

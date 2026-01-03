@@ -7,187 +7,122 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import json
 from pathlib import Path
-from manga_narrator.domain_models import OCRRun
-from manga_narrator.contracts.manga_dir import (
-    ImageEntry,
-    FileEntry,
-    MangaInputDirResponse,
-    MangaOutputDirResponse
+import manga_narrator.models.domain as d
+from manga_narrator.contracts.endpoint_contracts import (
+    MangaDirViewResponse,
+    LatestTTSResponse
 )
-from manga_narrator.contracts.manga_json_file import (
-    DialogueLineResponse,
-    OCRImageResponse,
-    OCRRunResponse
-)
-from manga_narrator.contracts.manga_latest_audio import LatestTTSResponse
+import manga_narrator.utils as utils
+from pydantic import ValidationError
+from typing import List
 
-
-BASE_MANGA_DIR = settings.MANGA_RUNS_DIR
+INPUTS_NAMESPACE, OUTPUTSNAMESPACE = settings.MEDIA_NAMESPACE_KEYS
 
 # views.py
 @require_GET
-def manga_dir_view(request):
-    rel_path = request.GET.get('path', '').strip()
-
-    # Restrict to INPUTS dir instead of full MANGA_RUNS_DIR
-    base_dir = settings.MANGA_INPUTS_DIR
-    target_path = os.path.normpath(os.path.join(base_dir, rel_path))
-
-    if not target_path.startswith(os.path.normpath(base_dir)):
-        print("Invalid path param passed to manga_dir_view")
-        return JsonResponse({'error': 'Invalid path'}, status=400)
-
-    if not os.path.exists(target_path):
-        print("Path doesn't exist.")
-        return JsonResponse({'error': 'Path does not exist'}, status=404)
-
-    folders = []
-    files = []
-
-    for entry in os.scandir(target_path):
-        if entry.is_dir():
-            folders.append(entry.name)
-        elif entry.is_file() and entry.name.lower().endswith(('.jpg', '.png', '.jpeg')):
-            rel_image_path = f"{rel_path}/{entry.name}" if rel_path else entry.name
-
-            files.append(
-                ImageEntry(
-                    name=entry.name,
-                    relative_path=rel_image_path,
-                    url=f"/api/manga/image/?path={rel_image_path}"
-                )
-            )
-
-    response = MangaInputDirResponse(
-        folders=folders,
-        files=files
-    )
-
-    return JsonResponse(response.model_dump(), safe=False)
-
-@require_GET
-def manga_output_dir_view(request):
-    rel_path = request.GET.get('path', '').strip()
-    rel_path = rel_path.lstrip('/')  # ← REMOVE leading slash if present
-    base_dir = settings.MANGA_OUTPUTS_DIR
-    target_path = os.path.normpath(os.path.join(base_dir, rel_path))
-
-    if not target_path.startswith(os.path.normpath(base_dir)):
-        return JsonResponse({'error': 'Invalid path'}, status=400)
-
-    if not os.path.exists(target_path):
-        return JsonResponse({'error': 'Path does not exist'}, status=404)
-
-    folders = []
-    files = []
-
-    for entry in os.scandir(target_path):
-        if entry.is_dir():
-            folders.append(entry.name)
-        elif entry.is_file() and entry.name.lower().endswith(".json"):
-            rel_file_path = f"{rel_path}/{entry.name}" if rel_path else entry.name
-
-            files.append(
-                FileEntry(
-                    name=entry.name,
-                    relative_path=rel_file_path,
-                    url=f"/api/manga/image/?path={rel_file_path}"
-                )
-            )
-
-    response = MangaOutputDirResponse(
-        folders=folders,
-        files=files
-    )
-
-    return JsonResponse(response.model_dump(), safe=False)
-
-@require_GET
-def manga_json_file_view(request):
-    rel_path = request.GET.get("path", "").strip().lstrip("/")
-    base_dir = Path(settings.MANGA_OUTPUTS_DIR).resolve()
-    target_path = (base_dir / rel_path).resolve()
-
-    # Safety check
-    if not str(target_path).startswith(str(base_dir)):
-        return JsonResponse({"error": "Invalid path"}, status=400)
-
-    if not target_path.is_file():
-        return JsonResponse({"error": "File does not exist"}, status=404)
-
+def manga_dir_view(request) -> JsonResponse:
     try:
-        # 1️⃣ DOMAIN: parse + validate raw OCR json
-        ocr_run = OCRRun.from_json_file(target_path)
+        media_ref = utils.build_media_Ref(
+            namespace=request.GET.get("namespace", "").strip(),
+            path=request.GET.get("path", "").strip(),
+        )
 
-        # 2️⃣ CONTRACT: map domain → API response
-        response = OCRRunResponse(
-            run_id=ocr_run.images[0].run_id if ocr_run.images else "",
-            images=[
-                OCRImageResponse(
-                    image_id=img.image_id,
-                    image_file_name=img.image_file_name,
-                    image_rel_path_from_root=img.image_rel_path_from_root,
-                    image_width=img.image_width,
-                    image_height=img.image_height,
-                    parsed_dialogue=[
-                        DialogueLineResponse(
-                            id=line.id,
-                            speaker=line.speaker,
-                            gender=line.gender,
-                            emotion=line.emotion,
-                            text=line.text,
-                        )
-                        for line in img.parsed_dialogue
-                    ],
-                )
-                for img in ocr_run.images
-            ],
+        # Restrict to INPUTS dir 
+        base_dir = media_ref.namespace_path(Path(settings.MEDIA_ROOT))
+        target_path = media_ref.resolve(Path(settings.MEDIA_ROOT))
+
+        if not utils.is_path_inside(target_path, base_dir):
+            raise ValueError("Invalid path param passed.")
+
+        if not target_path.exists():
+            raise ValueError("Path doesn't exist.")
+        
+        if not target_path.is_dir():
+            raise ValueError("Path is not a directory.")
+
+        folders: List[d.MediaRef] = []
+        files: List[d.MediaRef] = []
+
+        required_file_types = ['.jpg', '.png', '.jpeg'] if media_ref.namespace == INPUTS_NAMESPACE else [".json"]
+
+        for entry in target_path.iterdir():
+            rel_path = str(entry.relative_to(base_dir).as_posix())
+            if entry.is_dir():
+                folders.append(d.MediaRef(
+                    namespace=media_ref.namespace,
+                    path=rel_path
+                ))
+            elif entry.is_file() and entry.suffix in required_file_types:
+                files.append(d.MediaRef(
+                    namespace=media_ref.namespace,
+                    path=rel_path
+                ))
+
+        response = MangaDirViewResponse(
+            folders=folders,
+            files=files
         )
 
         return JsonResponse(response.model_dump(), safe=False)
+    except Exception as e:
+        raise 
+
+@require_GET
+def manga_json_file_view(request) -> JsonResponse:
+    try:
+        media_ref = utils.build_media_Ref(
+            namespace=request.GET.get("namespace", "").strip(),
+            path=request.GET.get("path", "").strip(),
+        )
+
+        # Restrict to OUTPUTS dir 
+        base_dir = media_ref.namespace_path(Path(settings.MEDIA_ROOT))
+        target_path = media_ref.resolve(Path(settings.MEDIA_ROOT))
+
+        if not utils.is_path_inside(target_path, base_dir) or media_ref.namespace != OUTPUTSNAMESPACE:
+            raise ValueError("Invalid path param passed.")
+
+        if not target_path.exists():
+            raise ValueError("Path doesn't exist.")
+        
+        if not target_path.is_file() or target_path.suffix.lower() != ".json":
+            raise ValueError("Path is not a json file.")
+
+        # 1️⃣ DOMAIN: parse + validate raw OCR json
+        ocr_run = d.PaddleAugmentedOCRRunResponse.from_json_file(target_path)
+
+        return JsonResponse(ocr_run.model_dump(), safe=False)
 
     except Exception as e:
         print(f"❌ Failed to load OCR JSON {target_path}: {e}")
-        return JsonResponse({"error": str(e)}, status=500)
-
+        raise
 
 @require_GET
 def latest_tts_audio_view(request):
     """
     Returns the latest generated TTS audio file.
     Always returns a consistent JSON response.
+    Input is the parent folder of the audio file.
     """
 
     try:
-        rel_path = request.GET.get("path", "").strip().lstrip("/")
-        base_dir = Path(settings.MANGA_OUTPUTS_DIR).resolve()
-        target_path = (base_dir / rel_path).resolve()
-        # tts_output_root = Path(settings.MEDIA_ROOT) / "tts_outputs"
+        media_ref = utils.build_media_Ref(
+            namespace=request.GET.get("namespace", "").strip(),
+            path=request.GET.get("path", "").strip(),
+        )
+        
+        base_dir = media_ref.namespace_path(Path(settings.MEDIA_ROOT))
+        target_path = media_ref.resolve(Path(settings.MEDIA_ROOT))
 
-        # Safety check
-        if not str(target_path).startswith(str(base_dir)):
-            response = LatestTTSResponse(
-                    status="error",
-                    audio_path=None,
-                    error="Invalid path"
-                )
-            return JsonResponse(
-                response.model_dump(),
-                safe=False,
-                status=400
-            )
+        # should be inside outputs folder
+        if not utils.is_path_inside(target_path, base_dir) or media_ref.namespace != OUTPUTSNAMESPACE:
+            raise ValueError("Invalid path param passed.")
 
-        if not target_path.exists() or not target_path.is_dir():
-            response = LatestTTSResponse(
-                    status="error",
-                    audio_path=None,
-                    error="TTS output directory does not exist"
-                )
-            return JsonResponse(
-                response.model_dump(),
-                safe=False,
-                status=404
-            )
+        if not target_path.exists():
+            raise ValueError("Path doesn't exist.")
+        
+        if not target_path.is_dir():
+            raise ValueError("Path is not a folder.")
         
         def extract_version(fname):
             try:
@@ -235,17 +170,34 @@ def latest_tts_audio_view(request):
 
     except Exception as e:
         # --- HARD FAILURE SAFETY NET ---
-        response = LatestTTSResponse(
-                status="error",
-                audio_path=None,
-                error=str(e)
-            )
-        return JsonResponse(
-            response.model_dump(),
-            safe=False,
-            status=500
+        raise
+
+@require_GET
+def manga_image_view(request) -> FileResponse:
+    """
+    Serve a manga image safely from disk.
+    """
+    try:
+        media_ref = utils.build_media_Ref(
+            namespace=request.GET.get("namespace", "").strip(),
+            path=request.GET.get("path", "").strip(),
         )
 
+        base_dir = media_ref.namespace_path(Path(settings.MEDIA_ROOT))
+        target_path = media_ref.resolve(Path(settings.MEDIA_ROOT))
+
+        if not utils.is_path_inside(target_path, base_dir):
+            raise ValueError("Invalid path param passed.")
+
+        if not target_path.exists():
+            raise ValueError("Path doesn't exist.")
+        
+        if not target_path.is_file():
+            raise ValueError("Path is not a folder.")
+
+        return FileResponse(open(target_path, "rb"), content_type="image/jpeg")
+    except Exception as e:
+        raise
 
 @csrf_exempt
 @require_POST
@@ -274,22 +226,3 @@ def save_ocr_json(request):
     except Exception as e:
         print(f"Error saving OCR JSON: {e}")
         return JsonResponse({"error": str(e)}, status=500)
-
-@require_GET
-def manga_image_view(request):
-    """
-    Serve a manga image safely from MANGA_INPUTS_DIR.
-    """
-    rel_path = request.GET.get("path", "").strip()
-    rel_path = rel_path.lstrip("/")
-
-    base_dir = settings.MANGA_INPUTS_DIR
-    target_path = os.path.normpath(os.path.join(base_dir, rel_path))
-
-    if not target_path.startswith(os.path.normpath(base_dir)):
-        return JsonResponse({"error": "Invalid path"}, status=400)
-
-    if not os.path.isfile(target_path):
-        return JsonResponse({"error": "Image not found"}, status=404)
-
-    return FileResponse(open(target_path, "rb"), content_type="image/jpeg")
