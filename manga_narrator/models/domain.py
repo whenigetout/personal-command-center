@@ -95,6 +95,8 @@ class PaddleOCRImage(OCRImage):
     paddleocr_result: Optional[Any] = None
 
 class PaddleAugmentedOCRRunResponse(OCRRunResponse):
+    # path to THE json file (with bboxes)
+    ocr_json_file: MediaRef
     imageResults: List[PaddleOCRImage]
 
     @classmethod

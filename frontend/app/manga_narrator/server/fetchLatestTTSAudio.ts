@@ -1,14 +1,21 @@
-import { LatestTTSResponse, LatestTTSResponseSchema } from "../types/manga_narrator_django_api_types"
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
+import { MediaRef } from "../types/manga_narrator_django_api_types"
+import { LatestTTSResponse } from "../types/manga_narrator_django_api_types"
 
 export const fetchLatestTTSAudio = async (
-    path: string
+    run_id: string,
+    dlg_id: number,
+    img_file: MediaRef
 ): Promise<LatestTTSResponse> => {
+    const url = `${BACKEND_API}/api/manga/latest_audio/?run_id=${run_id}&dlg_id=${dlg_id}&namespace=${img_file.namespace}&path=${encodeURIComponent(img_file.path)}`
     const res = await fetch(
-        `${BACKEND_API}/api/manga/latest_audio/?path=${encodeURIComponent(path)}`
+        url
     )
 
-    const json = await res.json()
-    return LatestTTSResponseSchema.parse(json)
+    if (!res.ok) {
+        throw Error(`Bad response from /api/manga/latest_audio, req url: ${url}`)
+    }
+
+    return res.json()
 
 }

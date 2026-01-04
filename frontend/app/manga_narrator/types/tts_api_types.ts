@@ -102,13 +102,14 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * MediaNamespace
+         * @enum {string}
+         */
+        MediaNamespace: "inputs" | "outputs";
         /** MediaRef */
         MediaRef: {
-            /**
-             * Namespace
-             * @enum {string}
-             */
-            namespace: "inputs" | "outputs";
+            namespace: components["schemas"]["MediaNamespace"];
             /** Path */
             path: string;
         };
@@ -173,8 +174,7 @@ export interface components {
         /** TTSOutput */
         TTSOutput: {
             ttsInput: components["schemas"]["TTSInput-Output"];
-            /** Audio Posix Path */
-            audio_posix_path: string;
+            audio_ref: components["schemas"]["MediaRef"];
         };
         /** ValidationError */
         ValidationError: {

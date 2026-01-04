@@ -1,11 +1,14 @@
 import { useTTS } from "@/app/manga_narrator/client/hooks/useTTS"
 import { GENDER_OPTIONS, TTSInput, Gender, Emotion, EmotionParams, Speaker } from "@/app/manga_narrator/types/tts_api_types"
-import { GenerateTTSButton } from "../../TTSLineParts/GenerateTTSButton"
+import { GenerateTTSButton } from "./TTSLineParts/GenerateTTSButton"
 import { PaddleDialogueLineResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
 import { MediaRef } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { Message } from "../../common/Message"
+import { CustomEmotionParams } from "./TTSLineParts/CustomEmotionParams"
 
 interface TTSLineProps {
     run_id: string
+    json_file: MediaRef
     image_ref: MediaRef
     dlgLine: PaddleDialogueLineResponse
     emotionOptions: Emotion[]
@@ -13,6 +16,7 @@ interface TTSLineProps {
 
 export const TTSLine = ({
     run_id,
+    json_file,
     image_ref,
     dlgLine,
     emotionOptions
@@ -20,7 +24,7 @@ export const TTSLine = ({
 
     const {
         generateTTS,
-        audioPath,
+        audioRef,
         useCustom,
         setUseCustom,
         cfg,
@@ -30,7 +34,18 @@ export const TTSLine = ({
         loading,
         error,
         reset
-    } = useTTS();
+    } = useTTS(run_id, dlgLine.id, image_ref);
+
+    function safeFloat(
+        value: unknown,
+        fallback: number
+    ): number {
+        const n = typeof value === "number"
+            ? value
+            : parseFloat(String(value));
+
+        return Number.isFinite(n) ? n : fallback;
+    }
 
     const handleGenerateTTS = () => {
         const gender: Gender = {
@@ -39,8 +54,8 @@ export const TTSLine = ({
                 : "neutral"
         }
         const settings: EmotionParams = {
-            exaggeration: parseFloat(exg),
-            cfg: parseFloat(cfg)
+            exaggeration: safeFloat(exg, 1.0),
+            cfg: safeFloat(cfg, 1.0),
         }
 
         const emotion: Emotion = {
@@ -66,24 +81,33 @@ export const TTSLine = ({
             custom_filename: "",
             dialogue_id: dlgLine.id
         }
+        console.log("logging TTSInput request: ", req)
         generateTTS(req);
     }
 
     return (
         <div className="border rounded p-2 mt-2 bg-zinc-900 text-zinc-100">
+
+            <CustomEmotionParams
+                cfg={cfg}
+                exg={exg}
+                useCustom={useCustom}
+                setCfg={setCfg}
+                setExg={setExg}
+                setUseCustom={setUseCustom}
+            />
+
             <GenerateTTSButton
-                audioUrl={audioPath}
+                audioRef={audioRef}
                 loading={loading}
                 isGenerating={false}
                 onGenerateTTS={handleGenerateTTS}
             />
 
-            {error && (
-                <div className="text-red-400 text-sm mt-1">
-                    {error}
-                </div>
-            )}
-
+            <Message
+                text={error ?? ""}
+                tone="error"
+            />
         </div>
     )
 }

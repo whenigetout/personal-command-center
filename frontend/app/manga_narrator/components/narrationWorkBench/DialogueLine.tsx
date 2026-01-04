@@ -12,6 +12,7 @@ import { Gender, Emotion } from "../../types/tts_api_types"
 
 interface DialogueLineProps {
     run_id: string
+    json_file: MediaRef
     image_ref: MediaRef
     dlgLine: PaddleDialogueLineResponse
     imageIdx: number
@@ -22,6 +23,7 @@ interface DialogueLineProps {
 
 export const DialogueLine = ({
     run_id,
+    json_file,
     image_ref,
     dlgLine,
     imageIdx,
@@ -61,6 +63,7 @@ export const DialogueLine = ({
 
             <TTSLine
                 run_id={run_id}
+                json_file={json_file}
                 image_ref={image_ref}
                 dlgLine={dlgLine}
                 emotionOptions={emotionOptions}

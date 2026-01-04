@@ -19,6 +19,7 @@ export const OcrJsonResult = ({
                 <MangaImage
                     key={image.image_id}
                     run_id={jsonResponse.run_id}
+                    json_file={jsonResponse.ocr_json_file}
                     image={image}
                     imageIdx={imageIdx}
                     emotionOptions={emotionOptions}

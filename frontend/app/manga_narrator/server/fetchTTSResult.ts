@@ -10,11 +10,28 @@ export const fetchTTSResult = async (
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(req)
-    }
-    )
+    })
+
+    // 👇 always read the body
+    const contentType = res.headers.get("content-type");
+    const body = contentType?.includes("application/json")
+        ? await res.json()
+        : await res.text();
+
     if (!res.ok) {
-        throw new Error("Bad response")
+        // preserve EVERYTHING
+        const error = new Error(
+            body?.detail?.[0]?.msg ??
+            body?.detail ??
+            body ??
+            `HTTP ${res.status}`
+        ) as Error & { status?: number; body?: unknown };
+
+        error.status = res.status;
+        error.body = body;
+
+        throw error;
     }
 
-    return res.json()
+    return body as TTSOutput;
 }

@@ -12,8 +12,6 @@ def is_path_inside(path: Path, base: Path) -> bool:
 
 def build_media_Ref(namespace: str, path: str) -> d.MediaRef:
     try:
-        if namespace not in ["inputs", "outputs"]:
-            raise
         ns: d.MediaNamespace = d.MediaNamespace.INPUTS if namespace == "inputs" else d.MediaNamespace.OUTPUTS
         media_ref = d.MediaRef(
             namespace=ns,

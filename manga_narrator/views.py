@@ -102,24 +102,53 @@ def latest_tts_audio_view(request):
     """
     Returns the latest generated TTS audio file.
     Always returns a consistent JSON response.
-    Input is the parent folder of the audio file.
+    Input is the img file mediaref (namespace and path) and run_id.
     """
 
     try:
+        run_id=request.GET.get("run_id", "").strip()
+        dlg_id=int(request.GET.get("dlg_id", "").strip())
+        if not run_id or dlg_id < 0:
+            raise ValueError("Invalid run_id or dlg_id passed.")
+        
         media_ref = utils.build_media_Ref(
             namespace=request.GET.get("namespace", "").strip(),
             path=request.GET.get("path", "").strip(),
         )
+
+        def audio_out_dir_path(
+                root: Path,
+                img_ref: d.MediaRef,
+                dlgId: int
+        ) -> Path:
+            ns = d.MediaNamespace.OUTPUTS.value
+            img_path_without_ext = Path(img_ref.path).with_suffix("")
+            img_ext_without_dot = img_ref.suffix[1:] # exclude the "."
+            out_dir: Path = Path(root)/ns/run_id/f"{img_path_without_ext}_{img_ext_without_dot}/dialogue__{dlgId}"
+            return out_dir
         
-        base_dir = media_ref.namespace_path(Path(settings.MEDIA_ROOT))
-        target_path = media_ref.resolve(Path(settings.MEDIA_ROOT))
+        base_dir = Path(settings.MEDIA_ROOT) / d.MediaNamespace.OUTPUTS.value
+        target_path = audio_out_dir_path(
+            Path(settings.MEDIA_ROOT),
+            media_ref,
+            dlg_id
+        )
 
         # should be inside outputs folder
-        if not utils.is_path_inside(target_path, base_dir) or media_ref.namespace != OUTPUTSNAMESPACE:
+        if not utils.is_path_inside(target_path, base_dir):
             raise ValueError("Invalid path param passed.")
 
         if not target_path.exists():
-            raise ValueError("Path doesn't exist.")
+            response = LatestTTSResponse(
+                    status="success",
+                    audio_path=None,
+                    error="TTS Not generated yet."
+                )
+            return JsonResponse(
+                response.model_dump(),
+                safe=False,
+                status=200
+            )
         
         if not target_path.is_dir():
             raise ValueError("Path is not a folder.")
@@ -130,7 +159,7 @@ def latest_tts_audio_view(request):
                 return int(ver.replace("v", ""))
             except:
                 return -1
-
+            
         audio_files = sorted(
             (
                 p for p in target_path.glob("*.wav")
@@ -141,15 +170,16 @@ def latest_tts_audio_view(request):
         )
 
         if not audio_files:
+            status_code = 404 if audio_files is None else 200
             response = LatestTTSResponse(
-                    status="error",
+                    status="error" if audio_files is None else "success",
                     audio_path=None,
                     error="No TTS audio files found"
                 )
             return JsonResponse(
                 response.model_dump(),
                 safe=False,
-                status=404
+                status=status_code
             )
 
         latest_audio = audio_files[0]
