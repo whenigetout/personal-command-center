@@ -258,11 +258,27 @@ export interface components {
             inferImageRes: components["schemas"]["InferImageResponse"];
             /** Parseddialoguelines */
             parsedDialogueLines: components["schemas"]["PaddleDialogueLineResponse"][];
+            paddleResizeInfo: components["schemas"]["PaddleResizeInfo"];
             /**
              * Paddleocr Result
              * @default null
              */
             paddleocr_result: unknown | null;
+        };
+        /** PaddleResizeInfo */
+        PaddleResizeInfo: {
+            /** Original H */
+            original_h: number;
+            /** Original W */
+            original_w: number;
+            /** Resized H */
+            resized_h: number;
+            /** Resized W */
+            resized_w: number;
+            /** Ratio H */
+            ratio_h: number;
+            /** Ratio W */
+            ratio_w: number;
         };
         /** LatestTTSResponse */
         LatestTTSResponse: {

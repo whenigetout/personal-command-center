@@ -67,10 +67,19 @@ class DialogueLineResponse(BaseModel):
     emotion: str
     text: str
 
+class PaddleResizeInfo(BaseModel):
+    original_h: int
+    original_w: int
+    resized_h: int
+    resized_w: int
+    ratio_h: float
+    ratio_w: float
+
 class OCRImage(BaseModel):
     image_id: str
     inferImageRes: InferImageResponse
     parsedDialogueLines: list[DialogueLineResponse]
+    paddleResizeInfo: PaddleResizeInfo
 
 class OCRRunResponse(BaseModel):
     run_id: str

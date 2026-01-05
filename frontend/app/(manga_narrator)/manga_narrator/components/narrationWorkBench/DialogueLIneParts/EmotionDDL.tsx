@@ -1,5 +1,5 @@
-import { EditAction, EditActionType } from "@/app/manga_narrator/types/EditActionType"
-import { Emotion } from "@/app/manga_narrator/types/tts_api_types"
+import { EditAction, EditActionType } from "../../../types/EditActionType"
+import { Emotion } from "../../../types/tts_api_types"
 
 interface EmotionDDLProps {
     emotion: string

@@ -1,4 +1,4 @@
-import { EditAction, EditActionType } from "@/app/manga_narrator/types/EditActionType"
+import { EditAction, EditActionType } from "../../../types/EditActionType"
 
 interface DialogueTextProps {
     dialogueText: string

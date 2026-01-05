@@ -1,4 +1,4 @@
-import { MediaRef, mediaBasename } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { MediaRef, mediaBasename } from "../../types/manga_narrator_django_api_types"
 import { BrowserState } from "../../types/BrowserState"
 interface FolderBrowserProps {
     folderBrowserTitle: string

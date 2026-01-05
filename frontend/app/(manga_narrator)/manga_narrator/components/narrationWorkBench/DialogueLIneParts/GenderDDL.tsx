@@ -1,6 +1,6 @@
-import { EditAction, EditActionType } from "@/app/manga_narrator/types/EditActionType"
+import { EditAction, EditActionType } from "../../../types/EditActionType"
 // import { genderOptions, Gender, normalizeGender } from "@/app/manga_narrator/types/gender"
-import { Gender, GENDER_OPTIONS } from "@/app/manga_narrator/types/tts_api_types"
+import { Gender, GENDER_OPTIONS } from "../../../types/tts_api_types"
 
 interface GenderDDLProps {
     gender: string

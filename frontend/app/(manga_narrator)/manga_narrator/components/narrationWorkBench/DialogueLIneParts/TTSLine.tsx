@@ -1,8 +1,7 @@
-import { useTTS } from "@/app/manga_narrator/client/hooks/useTTS"
-import { GENDER_OPTIONS, TTSInput, Gender, Emotion, EmotionParams, Speaker } from "@/app/manga_narrator/types/tts_api_types"
+import { useTTS } from "../../../client/hooks/useTTS"
+import { GENDER_OPTIONS, TTSInput, Gender, Emotion, EmotionParams, Speaker } from "../../../types/tts_api_types"
 import { GenerateTTSButton } from "./TTSLineParts/GenerateTTSButton"
-import { PaddleDialogueLineResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
-import { MediaRef } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { PaddleDialogueLineResponse, MediaRef } from "../../../types/manga_narrator_django_api_types"
 import { Message } from "../../common/Message"
 import { CustomEmotionParams } from "./TTSLineParts/CustomEmotionParams"
 
