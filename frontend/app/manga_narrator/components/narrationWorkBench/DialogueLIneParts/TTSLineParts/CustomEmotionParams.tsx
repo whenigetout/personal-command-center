@@ -20,15 +20,17 @@ export const CustomEmotionParams = ({
             {/* Custom Emotion Settings */}
             <div className="mt-3 border border-zinc-700 rounded p-2 space-y-2">
                 {/* Toggle */}
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={useCustom}
-                        onChange={(e) => setUseCustom(e.target.checked)}
-                        className="accent-blue-500"
-                    />
-                    <span>Use custom emotion parameters</span>
-                </label>
+                <div className="bg-zinc-800 rounded p-2 space-y-2">
+                    <label className="text-xs uppercase tracking-wide text-zinc-400">
+                        <input
+                            type="checkbox"
+                            checked={useCustom}
+                            onChange={(e) => setUseCustom(e.target.checked)}
+                            className="accent-blue-500"
+                        />
+                        <span>Use custom emotion parameters</span>
+                    </label>
+                </div>
 
                 {/* Params */}
                 <div

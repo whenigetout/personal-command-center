@@ -86,7 +86,7 @@ export const TTSLine = ({
     }
 
     return (
-        <div className="border rounded p-2 mt-2 bg-zinc-900 text-zinc-100">
+        <div className="bg-zinc-900/60 rounded-md p-3 space-y-3 border border-zinc-700">
 
             <CustomEmotionParams
                 cfg={cfg}
@@ -97,12 +97,14 @@ export const TTSLine = ({
                 setUseCustom={setUseCustom}
             />
 
-            <GenerateTTSButton
-                audioRef={audioRef}
-                loading={loading}
-                isGenerating={false}
-                onGenerateTTS={handleGenerateTTS}
-            />
+            <div className="flex items-center gap-3">
+                <GenerateTTSButton
+                    audioRef={audioRef}
+                    loading={loading}
+                    isGenerating={false}
+                    onGenerateTTS={handleGenerateTTS}
+                />
+            </div>
 
             <Message
                 text={error ?? ""}

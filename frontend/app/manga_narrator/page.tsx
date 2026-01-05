@@ -13,7 +13,6 @@ import { Emotion } from './types/tts_api_types'
 
 // === Path Constants ===
 const MEDIA_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
-const INPUT_ROOT = process.env.NEXT_PUBLIC_INPUT_ROOT || 'inputs'
 
 export default function MangaNarratorPage() {
     const [selectedImage, setSelectedImage] = useState<MediaRef | null>(null)

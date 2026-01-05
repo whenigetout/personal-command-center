@@ -1,6 +1,5 @@
 const MEDIA_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
-import { constructFolderPath } from "../../utils/helpers"
-import { MediaRef } from "../../types/manga_narrator_django_api_types"
+import { MediaRef } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
 
 interface GenerateTTSButtonProps {
     audioRef: MediaRef
@@ -35,7 +34,7 @@ export const GenerateTTSButton = ({
             ) : (
                 <button
                     onClick={() => onGenerateTTS()}
-                    className="bg-purple-600 text-white text-xs px-2 py-1 rounded hover:bg-purple-700 "
+                    className="bg-purple-600 hover:bg-purple-500 text-white"
                     disabled={loading || isGenerating}
                 >
                     {loading ? "🔃 Generating..." : "🎙️ Generate"}
