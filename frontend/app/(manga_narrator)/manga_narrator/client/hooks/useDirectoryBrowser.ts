@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
-import { MediaRef } from '../../types/manga_narrator_django_api_types'
-import { MangaDirViewResponse } from '../../types/manga_narrator_django_api_types'
+import { MediaRef, MediaNamespace, MangaDirViewResponse } from '@manganarrator/contracts'
 import { BrowserState } from '../../types/BrowserState'
 import { fetchDir } from '../../server/fetchDir'
-import { MediaNamespace } from '../../types/manga_narrator_django_api_types'
 
 export function useDirectoryBrowser(
     namespace: MediaNamespace

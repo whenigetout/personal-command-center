@@ -1,5 +1,7 @@
-import { MediaRef, mediaBasename } from "../../types/manga_narrator_django_api_types"
+import { MediaRef } from "@manganarrator/contracts"
 import { BrowserState } from "../../types/BrowserState"
+import { fileNameFromMediaRef } from "../../utils/helpers"
+
 interface FolderBrowserProps {
     folderBrowserTitle: string
     imageBrowserTitle: string
@@ -33,7 +35,7 @@ const FolderBrowser = ({
                                     onClick={() => onEnterFolder(folder)}
                                     className="text-blue-500 hover:underline"
                                 >
-                                    {mediaBasename(folder)}
+                                    {fileNameFromMediaRef(folder)}
                                 </button>
                             </li>
                         )
@@ -48,7 +50,7 @@ const FolderBrowser = ({
                     {(browserState.currentDirContents?.files ?? []).map(file => (
                         <li key={file.path}>
                             <button onClick={() => onSelectImage(file)}>
-                                {mediaBasename(file)}
+                                {fileNameFromMediaRef(file)}
                             </button>
                         </li>
                     ))}

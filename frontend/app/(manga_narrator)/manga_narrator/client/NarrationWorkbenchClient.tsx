@@ -7,12 +7,15 @@ interface NarrationWorkbenchClientProps {
     ocrJsonData: PaddleAugmentedOCRRunResponse
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
+    saveJson: () => void
+
 }
 
 export const NarrationWorkbenchClient = ({
     ocrJsonData,
     emotionOptions,
-    dispatchEdit
+    dispatchEdit,
+    saveJson
 }: NarrationWorkbenchClientProps) => {
 
     return (
@@ -22,6 +25,7 @@ export const NarrationWorkbenchClient = ({
                 jsonResponse={ocrJsonData}
                 emotionOptions={emotionOptions}
                 dispatchEdit={dispatchEdit}
+                saveJson={saveJson}
             />
         </div>
     )

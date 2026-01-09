@@ -9,23 +9,26 @@ interface OcrJsonResultProps {
     jsonResponse: PaddleAugmentedOCRRunResponse
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
+    saveJson: () => void
+
 }
 export const OcrJsonResult = ({
     jsonResponse,
     emotionOptions,
-    dispatchEdit
+    dispatchEdit,
+    saveJson
 }: OcrJsonResultProps) => {
 
     const [activeDlgIdx, setActiveDlgIdx] = useState(0)
     return (
-        <div className="max-w-5xl mx-auto px-4 space-y-6">
+        <div className=" px-4 space-y-6">
             <h2 className="text-sm text-zinc-400">
                 OCR Result · runId: <span className="text-zinc-200">{jsonResponse.run_id}</span>
             </h2>
 
             {jsonResponse.imageResults.map((image, imageIdx) =>
-                <div key={image.image_id}>
-                    <div >
+                <div className="grid grid-cols-[1fr_1.5fr] gap-6 px-6" key={image.image_id}>
+                    <div className="min-w-0">
                         <MangaImage
                             key={image.image_id}
                             run_id={jsonResponse.run_id}
@@ -37,13 +40,15 @@ export const OcrJsonResult = ({
                             onChangeDlg={setActiveDlgIdx}
                         />
                     </div>
-
-                    <div >
+                    <div className="sticky top-4 flex items-start justify-center">
                         <ImagePanPreview
                             key={image.image_id}
                             image={image}
+                            imageIdx={imageIdx}
                             activeDlgIdx={activeDlgIdx}
                             onChangeDlg={setActiveDlgIdx}
+                            dispatchEdit={dispatchEdit}
+                            saveJson={saveJson}
                         />
                     </div>
                 </div>

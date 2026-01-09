@@ -1,15 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import VideoPreviewClient from './client/VideoPreviewClient'
 import OCRInputSectionClient from './client/OCRInputSectionClient'
 import { OCROutputSectionClient } from './client/OCROutputSectionClient'
-import { constructFolderPath } from './utils/helpers'
 import { NarrationWorkbenchClient } from './client/NarrationWorkbenchClient'
 import { TestPageLink } from './dev/components/TestPageLink'
 import { useOcrJson } from './client/hooks/useOcrJson'
-import { MediaRef, mediaBasename } from './types/manga_narrator_django_api_types'
-import { Emotion } from './types/tts_api_types'
+import { MediaRef } from '@manganarrator/contracts'
+import { fileNameFromMediaRef, resolveMediaRef } from './utils/helpers'
+// import { Emotion } from './types/tts_api_types'
 
 // === Path Constants ===
 const MEDIA_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
@@ -22,48 +21,53 @@ export default function MangaNarratorPage() {
         data: ocrJsonData,
         emotionOptions,
         dispatchEdit,
+        saveJson,
         loading,
         error
     } = useOcrJson(selectedOcrJson)
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">📚 Manga Narrator: Load Chapter</h1>
-            <TestPageLink />
+        <div>
 
-            <OCRInputSectionClient
-                onSelectImage={setSelectedImage}
-            />
-            <OCROutputSectionClient
-                onSelectJson={setSelectedOcrJson}
-            />
 
-            {ocrJsonData && <NarrationWorkbenchClient
-                ocrJsonData={ocrJsonData}
-                emotionOptions={emotionOptions}
-                dispatchEdit={dispatchEdit}
-            />}
+            <div className="p-6 max-w-4xl mx-auto">
+                <h1 className="text-2xl font-bold mb-4">📚 Manga Narrator: Load Chapter</h1>
+                <TestPageLink />
 
-            {/* 
-            <VideoPreviewClient
-            /> */}
+                <OCRInputSectionClient
+                    onSelectImage={setSelectedImage}
+                />
+                <OCROutputSectionClient
+                    onSelectJson={setSelectedOcrJson}
+                />
+            </div>
 
-            {selectedImage && (
-                <div className="mt-6">
-                    <h2 className="text-lg font-semibold">
-                        📷 Preview: {mediaBasename(selectedImage)}
-                    </h2>
-
-                    <img
-                        src={`${MEDIA_ROOT}/${selectedImage.namespace}/${selectedImage.path}`}
-                        alt="preview"
-                        className="max-w-full border mt-2"
-                        onError={(e) => {
-                            e.currentTarget.style.display = "none"
-                        }}
-                    />
-                </div>
-            )}
+            <div className="p-6">
+                {/* {ocrJsonData && <NarrationWorkbenchClient
+                    ocrJsonData={ocrJsonData}
+                    emotionOptions={emotionOptions}
+                    dispatchEdit={dispatchEdit}
+                    saveJson={saveJson}
+                />} */}
+                {/*
+                <VideoPreviewClient
+                /> */}
+                {selectedImage && (
+                    <div className="mt-6">
+                        <h2 className="text-lg font-semibold">
+                            📷 Preview: {fileNameFromMediaRef(selectedImage)}
+                        </h2>
+                        <img
+                            src={resolveMediaRef(selectedImage)}
+                            alt="preview"
+                            className="max-w-full border mt-2"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none"
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
 
         </div>
     )

@@ -1,12 +1,8 @@
-//get the types from a different service
-npx openapi-typescript "path to openapi.json" -o types/video_api.ts 
 
-//generate openapi json types for frontend, run this from project root
-    //from django backend
-cd frontend\app\manga_narrator && npx openapi-typescript http://localhost:9000/api/manga/openapi.json -o types/manga_narrator_django_api_types_temp.ts
-    //from tts backend
-cd frontend\app\manga_narrator && npx openapi-typescript http://localhost:7861/openapi.json -o types/tts_api_types_temp.ts
-    //from ocr backend
-cd frontend\app\manga_narrator && npx openapi-typescript http://localhost:7860/openapi.json -o types/ocr_api_types_temp.ts
+
+//install shared contract repo types, run this from 'frontend' folder
+npm install github:whenigetout/manganarrator_contracts#main
+pip install git+https://github.com/whenigetout/manganarrator_contracts.git#subdirectory=python
+
 //export project tree structure
 git ls-files | tree --fromfile > local_tmp/project_structure.txt

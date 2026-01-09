@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
-import manga_narrator.models.domain as d
+import mn_contracts.ocr as d
 
 class MangaDirViewResponse(BaseModel):
     folders: List[d.MediaRef]

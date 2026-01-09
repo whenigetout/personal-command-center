@@ -7,9 +7,7 @@ import FolderBrowser from '../components/file_browsers/FolderBrowser'
 import { OCR_STATUS, OcrStatus } from '../shared/status_enums'
 import { callOCRapi } from '../server/callOCRapi'
 import { useDirectoryBrowser } from './hooks/useDirectoryBrowser'
-import { constructFolderPath } from '../utils/helpers'
-import { MediaNamespace, MEDIA_NAMESPACES } from '../types/manga_narrator_django_api_types'
-import { MediaRef } from '../types/manga_narrator_django_api_types'
+import { MediaRef, MediaNamespace } from '@manganarrator/contracts'
 
 const WSL_BASE = process.env.NEXT_PUBLIC_WSL_BASE as string
 const INPUT_ROOT = process.env.NEXT_PUBLIC_INPUT_ROOT || 'inputs'
@@ -26,7 +24,7 @@ const OCRInputSectionClient = ({
         browserState,
         goIntoFolder,
         goBack
-    } = useDirectoryBrowser(MEDIA_NAMESPACES[0]);
+    } = useDirectoryBrowser(MediaNamespace.INPUTS);
 
     const [ocrStatus, setOcrStatus] = useState<OcrStatus>(OCR_STATUS.IDLE);
 

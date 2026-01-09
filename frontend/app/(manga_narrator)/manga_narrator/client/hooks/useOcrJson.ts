@@ -6,6 +6,7 @@ import { EditAction } from "../../types/EditActionType";
 import { MediaRef } from "../../types/manga_narrator_django_api_types";
 import { fetchEmotionOptions } from "../../server/fetchEmotionOptions";
 import { EmotionOptionsOutput, Emotion } from "../../types/tts_api_types";
+import { saveCorrectedJson } from "../../server/saveCorrectedJson";
 
 // useOcrJson.ts
 export function useOcrJson(json_file: MediaRef | null) {
@@ -22,6 +23,12 @@ export function useOcrJson(json_file: MediaRef | null) {
             return updated
         })
     };
+
+    // for saving json at the current state
+    const saveJson = () => {
+        if (!data) return
+        saveCorrectedJson(data)
+    }
 
     // runs once on load and on every render
     useEffect(() => {
@@ -56,6 +63,7 @@ export function useOcrJson(json_file: MediaRef | null) {
         data,
         emotionOptions,
         dispatchEdit,
+        saveJson,
         loading,
         error
     };

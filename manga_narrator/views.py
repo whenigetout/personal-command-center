@@ -7,7 +7,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import json
 from pathlib import Path
-import manga_narrator.models.domain as d
+import mn_contracts.ocr as ocr
 from manga_narrator.contracts.endpoint_contracts import (
     MangaDirViewResponse,
     LatestTTSResponse
@@ -40,20 +40,20 @@ def manga_dir_view(request) -> JsonResponse:
         if not target_path.is_dir():
             raise ValueError("Path is not a directory.")
 
-        folders: List[d.MediaRef] = []
-        files: List[d.MediaRef] = []
+        folders: List[ocr.MediaRef] = []
+        files: List[ocr.MediaRef] = []
 
         required_file_types = ['.jpg', '.png', '.jpeg'] if media_ref.namespace == INPUTS_NAMESPACE else [".json"]
 
         for entry in target_path.iterdir():
             rel_path = str(entry.relative_to(base_dir).as_posix())
             if entry.is_dir():
-                folders.append(d.MediaRef(
+                folders.append(ocr.MediaRef(
                     namespace=media_ref.namespace,
                     path=rel_path
                 ))
             elif entry.is_file() and entry.suffix in required_file_types:
-                files.append(d.MediaRef(
+                files.append(ocr.MediaRef(
                     namespace=media_ref.namespace,
                     path=rel_path
                 ))
@@ -89,7 +89,9 @@ def manga_json_file_view(request) -> JsonResponse:
             raise ValueError("Path is not a json file.")
 
         # 1️⃣ DOMAIN: parse + validate raw OCR json
-        ocr_run = d.PaddleAugmentedOCRRunResponse.from_json_file(target_path)
+        with open(target_path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+            ocr_run = ocr.OCRRun.model_validate(raw)
 
         return JsonResponse(ocr_run.model_dump(), safe=False)
 
@@ -118,16 +120,16 @@ def latest_tts_audio_view(request):
 
         def audio_out_dir_path(
                 root: Path,
-                img_ref: d.MediaRef,
+                img_ref: ocr.MediaRef,
                 dlgId: int
         ) -> Path:
-            ns = d.MediaNamespace.OUTPUTS.value
+            ns = ocr.MediaNamespace.OUTPUTS.value
             img_path_without_ext = Path(img_ref.path).with_suffix("")
             img_ext_without_dot = img_ref.suffix[1:] # exclude the "."
             out_dir: Path = Path(root)/ns/run_id/f"{img_path_without_ext}_{img_ext_without_dot}/dialogue__{dlgId}"
             return out_dir
         
-        base_dir = Path(settings.MEDIA_ROOT) / d.MediaNamespace.OUTPUTS.value
+        base_dir = Path(settings.MEDIA_ROOT) / ocr.MediaNamespace.OUTPUTS.value
         target_path = audio_out_dir_path(
             Path(settings.MEDIA_ROOT),
             media_ref,
@@ -231,28 +233,49 @@ def manga_image_view(request) -> FileResponse:
 
 @csrf_exempt
 @require_POST
-def save_ocr_json(request):
+def save_augmented_ocr_json(request):
     try:
         body = json.loads(request.body)
-        rel_path = body.get("file_name", "").strip()
-        rel_path = rel_path.lstrip('/')  # ← REMOVE leading slash if present
-        data = body.get("data", None)
 
-        if not rel_path or data is None:
-            return JsonResponse({"error": "Missing file_name or data"}, status=400)
+        data = body.get("run_response")
+        
+        # Default filename for corrected ocr
+        output_file_name = "ocr_output_with_corrected_bboxes.json"
 
-        base_dir = settings.MANGA_OUTPUTS_DIR
-        target_path = os.path.normpath(os.path.join(base_dir, rel_path))
+        try:
+            run_response = ocr.OCRRun.model_validate(data)
+        except ValidationError as e:
+            return JsonResponse(
+                {"error": "Invalid PaddleAugmentedOCRRunResponse", "details": e.errors()},
+                status=400
+            )
 
-        # Prevent path traversal
-        if not target_path.startswith(os.path.normpath(base_dir)):
-            return JsonResponse({'error': 'Invalid path'}, status=400)
+        ocr_ref = run_response.ocr_json_file
 
-        # Save JSON data (indent for readability)
-        with open(target_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        # Full path to existing OCR json file
+        original_file = ocr_ref.resolve(Path(settings.MEDIA_ROOT))
 
-        return JsonResponse({"success": True, "file": rel_path})
+        # Parent directory of existing OCR json
+        target_dir = original_file.parent
+
+        # Final output path
+        target_file = (target_dir / output_file_name).resolve()
+
+        # Save JSON
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target_file.write_text(
+            json.dumps(run_response, ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+
+        return JsonResponse({
+            "success": True,
+            "saved_as": str(target_file.relative_to(ocr_ref.namespace_path(Path(settings.MEDIA_ROOT))))
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
     except Exception as e:
-        print(f"Error saving OCR JSON: {e}")
+        print(f"Error saving augmented OCR JSON: {e}")
         return JsonResponse({"error": str(e)}, status=500)

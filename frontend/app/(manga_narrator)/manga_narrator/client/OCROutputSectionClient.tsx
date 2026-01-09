@@ -1,11 +1,8 @@
 import { useDirectoryBrowser } from "./hooks/useDirectoryBrowser"
-import { fetchOutputDir } from "../server/fetchOutputDir"
 import InputPathBreadcrumb from "../components/file_browsers/InputPathBreadcrumb"
 import FolderBrowser from "../components/file_browsers/FolderBrowser"
-import { constructFolderPath } from "../utils/helpers"
-import { MediaRef } from "../types/manga_narrator_django_api_types"
 import { BrowserState } from "../types/BrowserState"
-import { MediaNamespace, MEDIA_NAMESPACES } from "../types/manga_narrator_django_api_types"
+import { MediaRef, MediaNamespace } from "@manganarrator/contracts"
 
 interface OCROutputSectionClientProps {
     onSelectJson: (json_file: MediaRef | null) => void
@@ -22,7 +19,7 @@ export const OCROutputSectionClient = ({
         browserState,
         goIntoFolder,
         goBack
-    } = useDirectoryBrowser(MEDIA_NAMESPACES[1]);
+    } = useDirectoryBrowser(MediaNamespace.OUTPUTS);
 
     return (
         <section>

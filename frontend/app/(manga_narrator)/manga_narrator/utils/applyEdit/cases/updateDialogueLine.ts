@@ -1,5 +1,5 @@
-import { EditAction } from "@/app/manga_narrator/types/EditActionType"
-import { PaddleAugmentedOCRRunResponse, PaddleOCRImage, PaddleDialogueLineResponse } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { EditAction } from "../../../types/EditActionType"
+import { PaddleAugmentedOCRRunResponse, PaddleOCRImage, PaddleDialogueLineResponse } from "../../../types/manga_narrator_django_api_types"
 
 export const updateDialogueLine = (
     prev: PaddleAugmentedOCRRunResponse,

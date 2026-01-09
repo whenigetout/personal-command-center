@@ -1,6 +1,6 @@
 from pathlib import Path
 from django.conf import settings
-import manga_narrator.models.domain as d
+import mn_contracts.ocr as d
 from pydantic import ValidationError
 
 def is_path_inside(path: Path, base: Path) -> bool:

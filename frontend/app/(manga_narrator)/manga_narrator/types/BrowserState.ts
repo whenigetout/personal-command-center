@@ -1,5 +1,4 @@
-import { MediaRef } from "./manga_narrator_django_api_types"
-import { MangaDirViewResponse } from "./manga_narrator_django_api_types"
+import { MediaRef, MangaDirViewResponse } from "@manganarrator/contracts"
 
 export type BrowserState = {
     currentDir: MediaRef
