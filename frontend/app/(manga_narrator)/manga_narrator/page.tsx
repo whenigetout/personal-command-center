@@ -26,6 +26,8 @@ export default function MangaNarratorPage() {
         error
     } = useOcrJson(selectedOcrJson)
 
+    console.log("logging ocrjson data:", ocrJsonData)
+
     return (
         <div>
 
@@ -42,13 +44,16 @@ export default function MangaNarratorPage() {
                 />
             </div>
 
+            {ocrJsonData &&
+                <p>TEXT: {ocrJsonData.images[0].dialogue_lines[0].text}</p>}
+
             <div className="p-6">
-                {/* {ocrJsonData && <NarrationWorkbenchClient
+                {ocrJsonData && <NarrationWorkbenchClient
                     ocrJsonData={ocrJsonData}
                     emotionOptions={emotionOptions}
                     dispatchEdit={dispatchEdit}
                     saveJson={saveJson}
-                />} */}
+                />}
                 {/*
                 <VideoPreviewClient
                 /> */}

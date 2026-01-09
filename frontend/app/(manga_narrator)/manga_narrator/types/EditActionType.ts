@@ -1,4 +1,4 @@
-import { PaddleDialogueLineResponse } from "./manga_narrator_django_api_types"
+import { DialogueLine } from "@manganarrator/contracts"
 
 export const EditActionType = {
     Dialogue_update: "dialogue_update",
@@ -13,7 +13,7 @@ export type EditAction =
         type: typeof EditActionType.Dialogue_update
         imageIdx: number
         dlgIdx: number
-        updates: Partial<PaddleDialogueLineResponse>
+        updates: Partial<DialogueLine>
     }
 //   | {
 //       type: typeof EditActionType.DialogueText

@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { PaddleAugmentedOCRRunResponse } from "../../types/manga_narrator_django_api_types";
 import { fetchOcrJsonContents } from "../../server/fetchOcrJsonContents";
 import { applyEdit } from "../../utils/applyEdit/applyEdit";
 import { EditAction } from "../../types/EditActionType";
-import { MediaRef } from "../../types/manga_narrator_django_api_types";
 import { fetchEmotionOptions } from "../../server/fetchEmotionOptions";
-import { EmotionOptionsOutput, Emotion } from "../../types/tts_api_types";
 import { saveCorrectedJson } from "../../server/saveCorrectedJson";
+import { MediaRef, OCRRun, Emotion, EMOTIONS, EmotionOptionsOutput } from "@manganarrator/contracts"
+import { toast } from "../../components/common/ToastHost";
+import { EMOJI } from "../../types/EMOJI";
 
 // useOcrJson.ts
 export function useOcrJson(json_file: MediaRef | null) {
-    const [data, setData] = useState<PaddleAugmentedOCRRunResponse | null>(null);
+    const [data, setData] = useState<OCRRun | null>(null);
     const [emotionOptions, setEmotionOptions] = useState<Emotion[]>([])
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -28,6 +28,8 @@ export function useOcrJson(json_file: MediaRef | null) {
     const saveJson = () => {
         if (!data) return
         saveCorrectedJson(data)
+            .then(() => toast(`${EMOJI.success} Saved successfully.`))
+            .catch(() => toast(`${EMOJI.warn} Failed to save json.`))
     }
 
     // runs once on load and on every render
@@ -55,7 +57,8 @@ export function useOcrJson(json_file: MediaRef | null) {
             .then((data: EmotionOptionsOutput) => {
                 setEmotionOptions(data.emotionOptions)
             })
-            .catch(() => setError("Failed to load Emotion Options"))
+            .catch(() => setError("Failed to load Emotion Options")
+            )
             .finally(() => setLoading(false));
     }, []);
 

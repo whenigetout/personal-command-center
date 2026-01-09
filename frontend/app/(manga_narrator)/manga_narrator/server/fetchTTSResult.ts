@@ -1,4 +1,4 @@
-import { TTSInput, TTSOutput } from "../types/tts_api_types";
+import { TTSInput, TTSOutput } from "@manganarrator/contracts"
 
 const TTS_API_ROOT = process.env.NEXT_PUBLIC_TTS_API as string
 

@@ -1,10 +1,9 @@
 import { OcrJsonResult } from "../components/narrationWorkBench/OcrJsonResult"
-import { PaddleAugmentedOCRRunResponse } from "../types/manga_narrator_django_api_types"
+import { OCRRun, Emotion } from "@manganarrator/contracts"
 import { EditAction } from "../types/EditActionType"
-import { Emotion } from "../types/tts_api_types"
 
 interface NarrationWorkbenchClientProps {
-    ocrJsonData: PaddleAugmentedOCRRunResponse
+    ocrJsonData: OCRRun
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void

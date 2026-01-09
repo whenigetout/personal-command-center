@@ -1,11 +1,15 @@
 import { ImageViewportProps } from "./ImageViewport";
 import { BBoxEditor } from "./BBoxEditor";
 import { EditAction } from "../../../types/EditActionType";
+import { OriginalImageBBox } from "@manganarrator/contracts";
+import { DisplayValues } from "../../common/DisplayValues";
 
 // DebugControls.tsx
 interface DebugControlsProps {
     frameWidth: number;
     setFrameWidth: (v: number) => void;
+
+    frameHeight: number
 
     frameTopPadding: number;
     setFrameTopPadding: (v: number) => void;
@@ -13,14 +17,15 @@ interface DebugControlsProps {
     frameSideMargin: number;
     setFrameSideMargin: (v: number) => void;
 
-    frameOffset: number;
-    setFrameOffest: (v: number) => void;
-
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
 
     imgViewPortProps: ImageViewportProps
-    bboxY1: number
+
+    originalBBox: OriginalImageBBox
+    setOriginalBBox: (v: OriginalImageBBox) => void
+    maxY1: number
+
     imageIdx: number
     activeDlgIdx: number
     dlgText: string
@@ -29,16 +34,17 @@ interface DebugControlsProps {
 export const DebugControls = ({
     frameWidth,
     setFrameWidth,
+    frameHeight,
     frameTopPadding,
     setFrameTopPadding,
     frameSideMargin,
     setFrameSideMargin,
-    frameOffset,
-    setFrameOffest,
     dispatchEdit,
     saveJson,
     imgViewPortProps,
-    bboxY1,
+    originalBBox,
+    setOriginalBBox,
+    maxY1,
     imageIdx,
     activeDlgIdx,
     dlgText
@@ -61,6 +67,11 @@ export const DebugControls = ({
                 />
                 <span>{frameWidth}px</span>
             </div>
+
+            <DisplayValues
+                displayLabel="frame h"
+                displayValue={frameHeight}
+            />
 
             <div>
                 <label>Top padding</label>
@@ -87,30 +98,35 @@ export const DebugControls = ({
             </div>
 
             <div>
-                <label>Frame Offset</label>
-                <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={frameOffset}
-                    onChange={(e) => setFrameOffest(+e.target.value)}
-                />
-                <span>{frameSideMargin}px</span>
-            </div>
-
-            <div>
                 <h3>Passed Props:</h3>
-                <p>Frame Offset: {imgViewPortProps.frame.p1.y}</p>
-                <p>BBox Y1: {bboxY1}</p>
+
                 <p>original img size: {imgSize.w} x {imgSize.h}</p>
                 <p>bgSize: {bgSize}</p>
                 <p>bgPos: {bgPos}</p>
                 <p>activeDlgIdx: {activeDlgIdx}</p>
                 <p>dlgText: {dlgText}</p>
+                <DisplayValues
+                    displayLabel="img scaled h"
+                    displayValue={imgSize.h * imgScale}
+                />
+                <DisplayValues
+                    displayLabel="maxy1 scaled"
+                    displayValue={(maxY1 * imgScale).toFixed(0)}
+                />
+                <DisplayValues
+                    displayLabel="maxy1"
+                    displayValue={maxY1}
+                />
             </div>
 
             <BBoxEditor
-                bbox={bbo}
+                activeDlgIdx={activeDlgIdx}
+                dispatchEdit={dispatchEdit}
+                imageIdx={imageIdx}
+                onSave={saveJson}
+                originalBBox={originalBBox}
+                setOriginalBBox={setOriginalBBox}
+                maxY1={maxY1}
             />
 
         </div>

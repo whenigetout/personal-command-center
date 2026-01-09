@@ -1,12 +1,11 @@
 import { MangaImage } from "./MangaImage"
-import { PaddleAugmentedOCRRunResponse } from "../../types/manga_narrator_django_api_types"
 import { EditAction } from "../../types/EditActionType"
-import { Emotion } from "../../types/tts_api_types"
 import { ImagePanPreview } from "./ImagePanPreview"
+import { OCRRun, Emotion } from "@manganarrator/contracts"
 import { useState } from "react"
 
 interface OcrJsonResultProps {
-    jsonResponse: PaddleAugmentedOCRRunResponse
+    jsonResponse: OCRRun
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
@@ -26,7 +25,7 @@ export const OcrJsonResult = ({
                 OCR Result · runId: <span className="text-zinc-200">{jsonResponse.run_id}</span>
             </h2>
 
-            {jsonResponse.imageResults.map((image, imageIdx) =>
+            {jsonResponse.images.map((image, imageIdx) =>
                 <div className="grid grid-cols-[1fr_1.5fr] gap-6 px-6" key={image.image_id}>
                     <div className="min-w-0">
                         <MangaImage

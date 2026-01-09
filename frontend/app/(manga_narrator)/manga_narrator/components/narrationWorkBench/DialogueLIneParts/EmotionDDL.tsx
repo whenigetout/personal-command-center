@@ -1,5 +1,5 @@
 import { EditAction, EditActionType } from "../../../types/EditActionType"
-import { Emotion } from "../../../types/tts_api_types"
+import { Emotion } from "@manganarrator/contracts"
 
 interface EmotionDDLProps {
     emotion: string

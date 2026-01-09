@@ -1,6 +1,5 @@
 const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API as string
-import { MediaRef } from "../types/manga_narrator_django_api_types"
-import { LatestTTSResponse } from "../types/manga_narrator_django_api_types"
+import { MediaRef, LatestTTSResponse } from "@manganarrator/contracts"
 
 export const fetchLatestTTSAudio = async (
     run_id: string,

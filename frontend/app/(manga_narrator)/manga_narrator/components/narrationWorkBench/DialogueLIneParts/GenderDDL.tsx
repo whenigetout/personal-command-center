@@ -1,6 +1,6 @@
 import { EditAction, EditActionType } from "../../../types/EditActionType"
 // import { genderOptions, Gender, normalizeGender } from "@/app/manga_narrator/types/gender"
-import { Gender, GENDER_OPTIONS } from "../../../types/tts_api_types"
+import { GENDERS } from "@manganarrator/contracts"
 
 interface GenderDDLProps {
     gender: string
@@ -30,9 +30,9 @@ export const GenderDDL = ({
                     })
                 }
             >
-                {GENDER_OPTIONS.map((opt, idx) => (
-                    <option key={opt} value={opt}>
-                        {opt}
+                {Object.values(GENDERS).map((opt, idx) => (
+                    <option key={opt.value} value={opt.value}>
+                        {opt.value}
                     </option>
                 ))}
             </select>

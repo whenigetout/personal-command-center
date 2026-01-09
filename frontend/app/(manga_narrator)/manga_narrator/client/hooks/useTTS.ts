@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react"
-import { TTSInput, TTSOutput } from "../../types/tts_api_types"
+import { TTSInput, TTSOutput, MediaRef, MediaNamespace } from "@manganarrator/contracts"
 import { fetchTTSResult } from "../../server/fetchTTSResult"
 import { fetchLatestTTSAudio } from "../../server/fetchLatestTTSAudio"
-import { MediaRef, MEDIA_NAMESPACES, MediaNamespace } from "../../types/manga_narrator_django_api_types"
 
 export const useTTS = (
     run_id: string,
@@ -10,7 +9,7 @@ export const useTTS = (
     img_file: MediaRef
 ) => {
     const [audioRef, setAudioRef] = useState<MediaRef>({
-        namespace: MEDIA_NAMESPACES[1],
+        namespace: MediaNamespace.OUTPUTS,
         path: ""
     })
     const [useCustom, setUseCustom] = useState<boolean>(false)
@@ -49,7 +48,7 @@ export const useTTS = (
         fetchLatestTTSAudio(run_id, dlg_id, img_file)
             .then(data => {
                 const latestAudioRef: MediaRef = {
-                    namespace: MEDIA_NAMESPACES[1],
+                    namespace: MediaNamespace.OUTPUTS,
                     path: data.audio_path ?? ""
                 };
                 setAudioRef(latestAudioRef);
@@ -74,7 +73,7 @@ export const useTTS = (
         loading,
         error,
         reset: () => setAudioRef({
-            namespace: MEDIA_NAMESPACES[1],
+            namespace: MediaNamespace.OUTPUTS,
             path: ""
         })
     }

@@ -1,15 +1,13 @@
-import { PaddleOCRImage, PaddleBBox, PaddleResizeInfo } from "../../types/manga_narrator_django_api_types"
-import { MediaRef } from "../../types/manga_narrator_django_api_types"
+import { MediaRef, OCRImage } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
 import { ImageViewport, ImageViewportProps } from "./ImagePanPreviewParts/ImageViewport"
 import { Point, Size, Frame, BBox } from "../../types/geometry"
 import { DebugControls } from "./ImagePanPreviewParts/DebugControls"
 import { EditAction } from "../../types/EditActionType"
-
-const MEDIA_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
+import { resolveMediaRef } from "../../utils/helpers"
 
 interface ImagePanPreviewProps {
-    image: PaddleOCRImage
+    image: OCRImage
     imageIdx: number
     activeDlgIdx: number
     onChangeDlg: (idx: number) => void
@@ -19,38 +17,18 @@ interface ImagePanPreviewProps {
 
 export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, dispatchEdit, saveJson }: ImagePanPreviewProps) {
 
-    const dlg = image.parsedDialogueLines[activeDlgIdx]
-    const bbox = dlg?.paddlebbox
-    const resize = image.paddleResizeInfo
-    const scaleToOriginal: Size = {
-        w: resize.resized_w / resize.original_w,
-        h: resize.resized_h / resize.original_h
-    }
-    const bboxScaledToOriginal: BBox = {
-        x1: bbox.x1 * scaleToOriginal.w,
-        y1: bbox.y1 * scaleToOriginal.h,
-        x2: bbox.x2 * scaleToOriginal.w,
-        y2: bbox.y2 * scaleToOriginal.h
-    }
+    const dlg = image.dialogue_lines[activeDlgIdx]
+    const bbox = dlg?.original_bbox
+
     const imgOriginalSize: Size = {
-        w: resize.original_w,
-        h: resize.original_h
+        w: image.image_info.image_width,
+        h: image.image_info.image_height
     }
 
-    const imgRef = image.inferImageRes.image_ref
-    const imgUrl = `${MEDIA_ROOT}/${imgRef.namespace}/${imgRef.path}`
+    const imgRef = image.image_info.image_ref
+    const imgUrl = resolveMediaRef(imgRef)
 
     const ASPECT_RATIO = (1080 / 1920)
-
-    // check if the bbox fits 
-    // const doesBBoxFit = () => {
-    //     // no need to check if it horizontally fits cause everything is calculated assuming it the image is scaled to horizontally fit
-    //     return (
-    //         bboxOriginalSize.y1 * imgScaleFactorOriginalToFrame >= currFrameY1Offset
-    //         &&
-    //         bboxOriginalSize.y2 * imgScaleFactorOriginalToFrame <= currFrameY1Offset + frameSize.h
-    //     )
-    // }
 
     const calcFrame_size = (width: number, sideMargin: number, aspectRatio: number) => ({
         w: width - 2 * sideMargin,
@@ -61,23 +39,28 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, di
     const [frameWidth, setFrameWidth] = useState(480);
     const [frameSideMargin, setFrameSideMargin] = useState(0);
     const [frameTopPadding, setFrameTopPadding] = useState(10);
-    const [frameY1Offset, setFrameY1Offset] = useState(0);
+    const [originalBBox, setOriginalBBox] = useState({ ...bbox });
     const [original, setOriginal] = useState<boolean>(false);
 
     // 2️⃣ Derived values (NO state, NO effect)
     const FRAME_SIZE = calcFrame_size(frameWidth, frameSideMargin, ASPECT_RATIO);
-    const imgScale = FRAME_SIZE.w / resize.original_w;
+    const imgScale = FRAME_SIZE.w / imgOriginalSize.w;
 
     // 3️⃣ Derived frame position
-    const baseOffsetY =
-        bboxScaledToOriginal.y1 * imgScale - frameTopPadding;
-
-    const finalOffsetY = baseOffsetY + frameY1Offset;
+    const finalOffsetY =
+        originalBBox.y1 * imgScale - frameTopPadding;
 
     const frame: Frame = {
         p1: { x: 0, y: finalOffsetY },
         p2: { x: FRAME_SIZE.w, y: finalOffsetY + FRAME_SIZE.h },
     };
+
+    const frameHeightInOriginal =
+        FRAME_SIZE.h / imgScale
+
+    const maxFrameY1 =
+        imgOriginalSize.h - frameHeightInOriginal
+
 
     // for debugging
     const imgViewPortProps: ImageViewportProps = {
@@ -94,6 +77,12 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, di
             setFrameWidth(imgOriginalSize.w);
         }
     }, [original]);
+
+    useEffect(() => {
+        if (bbox) {
+            setOriginalBBox({ ...bbox });
+        }
+    }, [activeDlgIdx, bbox]);
 
 
     return (
@@ -113,18 +102,21 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, di
                 <DebugControls
                     frameWidth={frameWidth}
                     setFrameWidth={setFrameWidth}
+
+                    frameHeight={FRAME_SIZE.h}
+
                     frameTopPadding={frameTopPadding}
                     setFrameTopPadding={setFrameTopPadding}
                     frameSideMargin={frameSideMargin}
                     setFrameSideMargin={setFrameSideMargin}
-                    frameOffset={frameY1Offset}
-                    setFrameOffest={setFrameY1Offset}
 
                     dispatchEdit={dispatchEdit}
                     saveJson={saveJson}
 
                     imgViewPortProps={imgViewPortProps}
-                    bboxY1={bboxScaledToOriginal.y1 * imgScale}
+                    originalBBox={originalBBox}
+                    setOriginalBBox={setOriginalBBox}
+                    maxY1={maxFrameY1}
                     imageIdx={imageIdx}
                     activeDlgIdx={activeDlgIdx}
                     dlgText={dlg.text}

@@ -1,66 +1,87 @@
-import { BBox } from "../../../types/geometry";
+import { EditAction, EditActionType } from "../../../types/EditActionType"
+import { OriginalImageBBox, DialogueLine } from "@manganarrator/contracts"
+import { PrecisionSlider } from "../../common/PrecisionSlider"
+import { DisplayValues } from "../../common/DisplayValues"
 
 interface BBoxEditorProps {
-    bbox: BBox;
-    onChange: (bbox: BBox) => void;
-    onSave: (bbox: BBox) => void;
+    originalBBox: OriginalImageBBox
+    setOriginalBBox: (v: OriginalImageBBox) => void
+    maxY1: number
+    imageIdx: number
+    activeDlgIdx: number
+
+    dispatchEdit: (action: EditAction) => void
+    onSave: () => void;
 }
 
-export const BBoxEditor = ({ bbox, onChange, onSave }: BBoxEditorProps) => {
-    const update = (key: keyof BBox, value: number) => {
-        onChange({
-            ...bbox,
-            [key]: value,
-        });
-    };
+export const BBoxEditor = ({
+    originalBBox,
+    setOriginalBBox,
+    maxY1,
+    imageIdx,
+    activeDlgIdx,
+    dispatchEdit,
+    onSave
+}: BBoxEditorProps) => {
+    // const update = (key: keyof BBox, value: number) => {
+    //     onChange({
+    //         ...bbox,
+    //         [key]: value,
+    //     });
+    // };
+
+    const update = (y1: number) => {
+
+        const newBbox = {
+            ...originalBBox,
+            y1: y1,
+            y2: originalBBox.y2 + (y1 - originalBBox.y1)
+        }
+        const edit: EditAction = {
+            dlgIdx: activeDlgIdx,
+            imageIdx: imageIdx,
+            type: EditActionType.Dialogue_update,
+            updates: {
+                original_bbox: newBbox
+            }
+        }
+        setOriginalBBox(newBbox)
+        dispatchEdit(edit)
+    }
+
 
     return (
         <div className="space-y-2 p-3 border rounded text-sm w-64">
             <div className="font-semibold">BBox Editor</div>
 
-            <label className="flex justify-between items-center gap-2">
-                <span>x1</span>
-                <input
-                    type="number"
-                    value={bbox.x1}
-                    onChange={(e) => update("x1", +e.target.value)}
-                    className="w-24 border px-1"
-                />
-            </label>
+            <DisplayValues
+                displayLabel="x1"
+                displayValue={originalBBox.x1}
+            />
 
-            <label className="flex justify-between items-center gap-2">
-                <span>y1</span>
-                <input
-                    type="number"
-                    value={bbox.y1}
-                    onChange={(e) => update("y1", +e.target.value)}
-                    className="w-24 border px-1"
-                />
-            </label>
+            <PrecisionSlider
+                label="y1"
+                value={originalBBox.y1}
+                min={0}
+                max={maxY1}
+                step={1}
+                bigStep={10}
+                onChange={(y1) => update(y1)}
+            />
 
-            <label className="flex justify-between items-center gap-2">
-                <span>x2</span>
-                <input
-                    type="number"
-                    value={bbox.x2}
-                    onChange={(e) => update("x2", +e.target.value)}
-                    className="w-24 border px-1"
-                />
-            </label>
+            <DisplayValues
+                displayLabel="x2"
+                displayValue={originalBBox.x2}
+            />
 
-            <label className="flex justify-between items-center gap-2">
-                <span>y2</span>
-                <input
-                    type="number"
-                    value={bbox.y2}
-                    onChange={(e) => update("y2", +e.target.value)}
-                    className="w-24 border px-1"
-                />
-            </label>
+            <DisplayValues
+                displayLabel="y2"
+                displayValue={originalBBox.y2}
+            />
 
             <button
                 className="w-full mt-2 border rounded py-1 hover:bg-gray-100"
-                onClick={() => onSave(bbox)}
+                onClick={() => onSave()}
             >
                 Save to JSON
             </button>

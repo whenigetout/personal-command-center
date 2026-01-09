@@ -1,7 +1,6 @@
 import { useTTS } from "../../../client/hooks/useTTS"
-import { GENDER_OPTIONS, TTSInput, Gender, Emotion, EmotionParams, Speaker } from "../../../types/tts_api_types"
+import { GENDERS, TTSInput, Gender, Emotion, EmotionParams, Speaker, OCRRun, MediaRef, DialogueLine } from "@manganarrator/contracts"
 import { GenerateTTSButton } from "./TTSLineParts/GenerateTTSButton"
-import { PaddleDialogueLineResponse, MediaRef } from "../../../types/manga_narrator_django_api_types"
 import { Message } from "../../common/Message"
 import { CustomEmotionParams } from "./TTSLineParts/CustomEmotionParams"
 
@@ -9,7 +8,7 @@ interface TTSLineProps {
     run_id: string
     json_file: MediaRef
     image_ref: MediaRef
-    dlgLine: PaddleDialogueLineResponse
+    dlgLine: DialogueLine
     emotionOptions: Emotion[]
 }
 
@@ -47,11 +46,17 @@ export const TTSLine = ({
     }
 
     const handleGenerateTTS = () => {
-        const gender: Gender = {
-            value: GENDER_OPTIONS.includes(dlgLine.gender as Gender["value"])
-                ? (dlgLine.gender as Gender["value"])
-                : "neutral"
+        const GENDER_VALUES = Object.values(GENDERS).map(g => g.value);
+        function isGenderValue(value: string): value is Gender["value"] {
+            return GENDER_VALUES.includes(value as Gender["value"]);
         }
+
+        const gender: Gender = {
+            value: isGenderValue(dlgLine.gender)
+                ? dlgLine.gender
+                : "neutral",
+        };
+
         const settings: EmotionParams = {
             exaggeration: safeFloat(exg, 1.0),
             cfg: safeFloat(cfg, 1.0),
@@ -75,7 +80,7 @@ export const TTSLine = ({
             emotion: emotion,
             speaker: speaker,
             image_ref: image_ref,
-            customSettings: useCustom ? settings : null,
+            customSettings: useCustom ? settings : undefined,
             run_id: run_id,
             custom_filename: "",
             dialogue_id: dlgLine.id

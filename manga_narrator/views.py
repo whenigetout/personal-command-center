@@ -52,7 +52,14 @@ def manga_dir_view(request) -> JsonResponse:
                     namespace=media_ref.namespace,
                     path=rel_path
                 ))
-            elif entry.is_file() and entry.suffix in required_file_types:
+            elif entry.is_file() and entry.suffix in required_file_types:  
+                # if it's a json file, filter by file name
+                if entry.suffix == ".json" and not(
+                    entry.name == "ocrrun.json"
+                    or "corrected" in entry.name
+                ):
+                    continue
+
                 files.append(ocr.MediaRef(
                     namespace=media_ref.namespace,
                     path=rel_path
@@ -236,14 +243,12 @@ def manga_image_view(request) -> FileResponse:
 def save_augmented_ocr_json(request):
     try:
         body = json.loads(request.body)
-
-        data = body.get("run_response")
         
         # Default filename for corrected ocr
         output_file_name = "ocr_output_with_corrected_bboxes.json"
 
         try:
-            run_response = ocr.OCRRun.model_validate(data)
+            run_response = ocr.OCRRun.model_validate(body)
         except ValidationError as e:
             return JsonResponse(
                 {"error": "Invalid PaddleAugmentedOCRRunResponse", "details": e.errors()},
@@ -264,7 +269,11 @@ def save_augmented_ocr_json(request):
         # Save JSON
         target_dir.mkdir(parents=True, exist_ok=True)
         target_file.write_text(
-            json.dumps(run_response, ensure_ascii=False, indent=2),
+            json.dumps(
+                run_response.model_dump(),
+                ensure_ascii=False,
+                indent=2
+            ),
             encoding="utf-8"
         )
 

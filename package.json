@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@manganarrator/contracts": "github:whenigetout/manganarrator_contracts#main",
     "zod": "^4.2.1"
   }
 }

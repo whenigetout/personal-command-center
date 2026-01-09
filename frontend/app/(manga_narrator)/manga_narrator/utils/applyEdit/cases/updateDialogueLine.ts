@@ -1,20 +1,20 @@
 import { EditAction } from "../../../types/EditActionType"
-import { PaddleAugmentedOCRRunResponse, PaddleOCRImage, PaddleDialogueLineResponse } from "../../../types/manga_narrator_django_api_types"
+import { OCRRun, OCRImage, DialogueLine } from "@manganarrator/contracts"
 
 export const updateDialogueLine = (
-    prev: PaddleAugmentedOCRRunResponse,
+    prev: OCRRun,
     action: EditAction
-): PaddleAugmentedOCRRunResponse => {
+): OCRRun => {
     const { imageIdx, dlgIdx, updates } = action
 
     return {
         ...prev,
-        imageResults: prev.imageResults.map((img: PaddleOCRImage, i) => {
+        images: prev.images.map((img: OCRImage, i) => {
             if (i !== imageIdx) return img
 
-            const updatedImg: PaddleOCRImage = {
+            const updatedImg: OCRImage = {
                 ...img,
-                parsedDialogueLines: img.parsedDialogueLines.map((dlg: PaddleDialogueLineResponse, j) =>
+                dialogue_lines: img.dialogue_lines.map((dlg: DialogueLine, j) =>
                     j === dlgIdx
                         ? { ...dlg, ...updates }
                         : dlg
