@@ -10,12 +10,11 @@ interface ImagePanPreviewProps {
     image: OCRImage
     imageIdx: number
     activeDlgIdx: number
-    onChangeDlg: (idx: number) => void
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
 }
 
-export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, dispatchEdit, saveJson }: ImagePanPreviewProps) {
+export function ImagePanPreview({ image, imageIdx, activeDlgIdx, dispatchEdit, saveJson }: ImagePanPreviewProps) {
 
     const dlg = image.dialogue_lines[activeDlgIdx]
     const bbox = dlg?.original_bbox
@@ -28,6 +27,7 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, di
     const imgRef = image.image_info.image_ref
     const imgUrl = resolveMediaRef(imgRef)
 
+    const DEFAULT_FRAME_WIDTH = 360
     const ASPECT_RATIO = (1080 / 1920)
 
     const calcFrame_size = (width: number, sideMargin: number, aspectRatio: number) => ({
@@ -36,7 +36,7 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, di
     })
 
     // 1️⃣ Source state
-    const [frameWidth, setFrameWidth] = useState(480);
+    const [frameWidth, setFrameWidth] = useState(DEFAULT_FRAME_WIDTH);
     const [frameSideMargin, setFrameSideMargin] = useState(0);
     const [frameTopPadding, setFrameTopPadding] = useState(10);
     const [originalBBox, setOriginalBBox] = useState({ ...bbox });
@@ -76,6 +76,9 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, di
         if (original) {
             setFrameWidth(imgOriginalSize.w);
         }
+        else {
+            setFrameWidth(DEFAULT_FRAME_WIDTH)
+        }
     }, [original]);
 
     useEffect(() => {
@@ -86,52 +89,42 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, onChangeDlg, di
 
 
     return (
-        <>
-            <div>
-                <label className="text-xs uppercase tracking-wide text-zinc-400">
-                    <input
-                        type="checkbox"
-                        checked={original}
-                        onChange={(e) => setOriginal(e.target.checked)}
-                        className="accent-blue-500"
-                    />
-                    <span>See original, with no scaling</span>
-                </label>
-            </div>
-            <div className="grid grid-cols-[1fr_1fr] gap-6 px-6">
-                <DebugControls
-                    frameWidth={frameWidth}
-                    setFrameWidth={setFrameWidth}
+        <div className="grid grid-cols-[1fr_1fr] gap-6 px-6">
+            <DebugControls
+                frameWidth={frameWidth}
+                setFrameWidth={setFrameWidth}
 
-                    frameHeight={FRAME_SIZE.h}
+                frameHeight={FRAME_SIZE.h}
 
-                    frameTopPadding={frameTopPadding}
-                    setFrameTopPadding={setFrameTopPadding}
-                    frameSideMargin={frameSideMargin}
-                    setFrameSideMargin={setFrameSideMargin}
+                frameTopPadding={frameTopPadding}
+                setFrameTopPadding={setFrameTopPadding}
+                frameSideMargin={frameSideMargin}
+                setFrameSideMargin={setFrameSideMargin}
 
-                    dispatchEdit={dispatchEdit}
-                    saveJson={saveJson}
+                dispatchEdit={dispatchEdit}
+                saveJson={saveJson}
 
-                    imgViewPortProps={imgViewPortProps}
-                    originalBBox={originalBBox}
-                    setOriginalBBox={setOriginalBBox}
-                    maxY1={maxFrameY1}
-                    imageIdx={imageIdx}
-                    activeDlgIdx={activeDlgIdx}
-                    dlgText={dlg.text}
-                />
+                imgViewPortProps={imgViewPortProps}
+                originalBBox={originalBBox}
+                setOriginalBBox={setOriginalBBox}
+                maxY1={maxFrameY1}
+                imageIdx={imageIdx}
+                activeDlgIdx={activeDlgIdx}
+                dlgText={dlg.text}
 
-                <ImageViewport
-                    imgUrl={imgUrl}
-                    imgSize={imgOriginalSize}
-                    framSize={FRAME_SIZE}
-                    imgScale={imgScale}
-                    frame={frame}
-                    sideMargin={frameSideMargin}
-                />
-            </div>
-        </>
+                showOriginalValues={original}
+                onOriginalToggle={setOriginal}
+            />
+
+            <ImageViewport
+                imgUrl={imgUrl}
+                imgSize={imgOriginalSize}
+                framSize={FRAME_SIZE}
+                imgScale={imgScale}
+                frame={frame}
+                sideMargin={frameSideMargin}
+            />
+        </div>
     );
 
 }

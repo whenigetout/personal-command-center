@@ -13,7 +13,7 @@ export const DisplayValues = ({
 }: DisplayValuesProps) => {
     const classes = clsx(
         {
-            'text-yellow': highlight
+            'text-yellow-400': highlight,
         }
     )
     return (

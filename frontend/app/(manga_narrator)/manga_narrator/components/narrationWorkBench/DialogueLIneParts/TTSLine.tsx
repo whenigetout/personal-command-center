@@ -85,7 +85,6 @@ export const TTSLine = ({
             custom_filename: "",
             dialogue_id: dlgLine.id
         }
-        console.log("logging TTSInput request: ", req)
         generateTTS(req);
     }
 

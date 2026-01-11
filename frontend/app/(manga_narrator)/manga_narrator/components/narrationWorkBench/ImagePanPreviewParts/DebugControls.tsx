@@ -29,6 +29,9 @@ interface DebugControlsProps {
     imageIdx: number
     activeDlgIdx: number
     dlgText: string
+
+    showOriginalValues: boolean
+    onOriginalToggle: (v: boolean) => void
 }
 
 export const DebugControls = ({
@@ -47,7 +50,9 @@ export const DebugControls = ({
     maxY1,
     imageIdx,
     activeDlgIdx,
-    dlgText
+    dlgText,
+    showOriginalValues,
+    onOriginalToggle
 }: DebugControlsProps) => {
     const { imgSize, imgScale, frame } = imgViewPortProps
 
@@ -56,6 +61,18 @@ export const DebugControls = ({
 
     return (
         <div className="space-y-3 p-3 border rounded text-sm">
+            <div>
+                <label className="text-xs uppercase tracking-wide text-zinc-400">
+                    <input
+                        type="checkbox"
+                        checked={showOriginalValues}
+                        onChange={(e) => onOriginalToggle(e.target.checked)}
+                        className="accent-blue-500"
+                    />
+                    <span>See original, with no scaling</span>
+                </label>
+            </div>
+
             <div>
                 <label>Frame width</label>
                 <input
@@ -104,7 +121,11 @@ export const DebugControls = ({
                 <p>bgSize: {bgSize}</p>
                 <p>bgPos: {bgPos}</p>
                 <p>activeDlgIdx: {activeDlgIdx}</p>
-                <p>dlgText: {dlgText}</p>
+                <DisplayValues
+                    displayLabel="Text"
+                    displayValue={dlgText}
+                    highlight={true}
+                />
                 <DisplayValues
                     displayLabel="img scaled h"
                     displayValue={imgSize.h * imgScale}

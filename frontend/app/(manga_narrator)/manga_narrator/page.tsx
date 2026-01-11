@@ -26,8 +26,6 @@ export default function MangaNarratorPage() {
         error
     } = useOcrJson(selectedOcrJson)
 
-    console.log("logging ocrjson data:", ocrJsonData)
-
     return (
         <div>
 

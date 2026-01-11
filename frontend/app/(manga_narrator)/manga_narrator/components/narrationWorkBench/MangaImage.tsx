@@ -3,6 +3,7 @@ import { ImageDialogueLine } from "./ImageDialogueLine"
 import { OCRImage, MediaRef, Emotion } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
 import { fileNameFromMediaRef } from "../../utils/helpers"
+import { ImagePanPreview } from "./ImagePanPreview"
 
 interface MangaImageProps {
     run_id: string
@@ -11,7 +12,7 @@ interface MangaImageProps {
     imageIdx: number
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
-    onChangeDlg: (idx: number) => void
+    saveJson: () => void
 }
 export const MangaImage = ({
     run_id,
@@ -20,13 +21,13 @@ export const MangaImage = ({
     imageIdx,
     emotionOptions,
     dispatchEdit,
-    onChangeDlg
+    saveJson
 }: MangaImageProps) => {
 
     // for expand/collapse logic
     const [expandAll, setExpandAll] = useState<boolean>(false);
     // for img pan preview
-
+    const [activeDlgIdx, setActiveDlgIdx] = useState(0)
 
 
     return (
@@ -45,22 +46,36 @@ export const MangaImage = ({
                 </button>
             </div>
 
-            <div>
-                {image.dialogue_lines.map((dlgLine, dlgIdx) =>
-                    <ImageDialogueLine
-                        key={dlgLine.id}
-                        run_id={run_id}
-                        json_file={json_file}
-                        image_ref={image.image_info.image_ref}
-                        dlgLine={dlgLine}
+            <div className="grid grid-cols-[1fr_1.5fr] gap-6 px-6" >
+                <div className="min-w-0">
+                    {image.dialogue_lines.map((dlgLine, dlgIdx) =>
+
+                        <ImageDialogueLine
+                            key={dlgLine.id}
+                            run_id={run_id}
+                            json_file={json_file}
+                            image_ref={image.image_info.image_ref}
+                            dlgLine={dlgLine}
+                            imageIdx={imageIdx}
+                            dlgIdx={dlgIdx}
+                            emotionOptions={emotionOptions}
+                            dispatchEdit={dispatchEdit}
+                            forceExpand={expandAll}
+                            onDlgClick={setActiveDlgIdx}
+                        />
+
+                    )}
+                </div>
+                <div className="sticky top-4 flex items-start justify-center">
+                    <ImagePanPreview
+                        key={image.image_id}
+                        image={image}
                         imageIdx={imageIdx}
-                        dlgIdx={dlgIdx}
-                        emotionOptions={emotionOptions}
+                        activeDlgIdx={activeDlgIdx}
                         dispatchEdit={dispatchEdit}
-                        forceExpand={expandAll}
-                        onDlgClick={onChangeDlg}
+                        saveJson={saveJson}
                     />
-                )}
+                </div>
             </div>
         </div>
     )
