@@ -56,7 +56,7 @@ def manga_dir_view(request) -> JsonResponse:
                 # if it's a json file, filter by file name
                 if entry.suffix == ".json" and not(
                     entry.name == "ocrrun.json"
-                    or "corrected" in entry.name
+                    or "final" in entry.name
                 ):
                     continue
 
@@ -245,7 +245,7 @@ def save_augmented_ocr_json(request):
         body = json.loads(request.body)
         
         # Default filename for corrected ocr
-        output_file_name = "ocr_output_with_corrected_bboxes.json"
+        output_file_name = "ocrrun_final.json"
 
         try:
             run_response = ocr.OCRRun.model_validate(body)
@@ -266,11 +266,21 @@ def save_augmented_ocr_json(request):
         # Final output path
         target_file = (target_dir / output_file_name).resolve()
 
+        base = run_response.model_dump(exclude={"ocr_json_file"})
+        target_file_ref = utils.build_media_Ref(
+                namespace=ocr.MediaNamespace.OUTPUTS,
+                path=str(target_file.relative_to(Path(settings.MEDIA_ROOT) / ocr.MediaNamespace.OUTPUTS.value))
+            )
+        result = ocr.OCRRun(
+            **base,
+            ocr_json_file=target_file_ref
+        )
+
         # Save JSON
         target_dir.mkdir(parents=True, exist_ok=True)
         target_file.write_text(
             json.dumps(
-                run_response.model_dump(),
+                result.model_dump(),
                 ensure_ascii=False,
                 indent=2
             ),

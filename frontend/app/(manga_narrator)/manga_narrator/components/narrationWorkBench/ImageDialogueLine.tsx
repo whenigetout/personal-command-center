@@ -8,6 +8,8 @@ import {
 import { EditAction } from "../../types/EditActionType"
 import { MediaRef, Emotion, DialogueLine } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
+import clsx from "clsx"
+import { text } from "node:stream/consumers"
 
 interface ImageDialogueLineProps {
     run_id: string
@@ -20,6 +22,8 @@ interface ImageDialogueLineProps {
     dispatchEdit: (action: EditAction) => void
     forceExpand: boolean
     onDlgClick: (idx: number) => void
+    onDelete: (dlgIdx: number) => void
+    activeDlgIdx: number
 }
 
 export const ImageDialogueLine = ({
@@ -32,8 +36,12 @@ export const ImageDialogueLine = ({
     emotionOptions,
     dispatchEdit,
     forceExpand,
-    onDlgClick
+    onDlgClick,
+    onDelete,
+    activeDlgIdx
 }: ImageDialogueLineProps) => {
+
+    const hasBbox = !!dlgLine.original_bbox
 
     const [expanded, setExpanded] = useState<boolean>(false);
 
@@ -42,11 +50,48 @@ export const ImageDialogueLine = ({
     }, [forceExpand])
 
     return (
-        <div className="bg-zinc-800 rounded-md p-3 space-y-3" onClick={() => onDlgClick(dlgIdx)}>
+
+        < div
+            onClick={() => onDlgClick(dlgIdx)
+            }
+            className={
+                clsx(
+                    "rounded-md p-3 space-y-3 cursor-pointer transition-all",
+                    hasBbox
+                        ? "bg-zinc-800 hover:bg-zinc-750"
+                        : "bg-amber-950/30 border border-amber-500/60 ring-1 ring-amber-400/40",
+                )}
+        >
+
+
             <div className="flex items-start justify-between gap-3">
-                <p className="text-zinc-100 leading-snug flex-1">
+                <p
+                    className={clsx(
+                        "leading-snug flex-1",
+                        hasBbox
+                            ? "text-zinc-100"
+                            : "text-amber-200 italic",
+                        activeDlgIdx === dlgIdx && "text-amber-400"
+                    )}
+                >
                     {dlgLine.text}
                 </p>
+                {!hasBbox && (
+                    <span className="text-xs px-2 py-0.5 rounded bg-amber-600/20 text-amber-300 border border-amber-500/40">
+                        NO BBOX
+                    </span>
+                )}
+
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        onDelete(dlgIdx)
+                    }}
+                    className="text-xs px-2 py-1 rounded bg-red-600/20 text-red-300 hover:bg-red-600/40"
+                >
+                    Delete
+                </button>
+
 
                 <button
                     onClick={() => setExpanded(v => !v)}

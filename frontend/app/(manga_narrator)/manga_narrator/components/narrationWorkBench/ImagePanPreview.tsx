@@ -1,9 +1,9 @@
-import { MediaRef, OCRImage } from "@manganarrator/contracts"
+import { MediaRef, OCRImage, OriginalImageBBox } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
 import { ImageViewport, ImageViewportProps } from "./ImagePanPreviewParts/ImageViewport"
 import { Point, Size, Frame, BBox } from "../../types/geometry"
 import { DebugControls } from "./ImagePanPreviewParts/DebugControls"
-import { EditAction } from "../../types/EditActionType"
+import { EditAction, EditActionType } from "../../types/EditActionType"
 import { resolveMediaRef } from "../../utils/helpers"
 
 interface ImagePanPreviewProps {
@@ -17,7 +17,7 @@ interface ImagePanPreviewProps {
 export function ImagePanPreview({ image, imageIdx, activeDlgIdx, dispatchEdit, saveJson }: ImagePanPreviewProps) {
 
     const dlg = image.dialogue_lines[activeDlgIdx]
-    const bbox = dlg?.original_bbox
+    const bbox = dlg?.original_bbox ?? null
 
     const imgOriginalSize: Size = {
         w: image.image_info.image_width,
@@ -39,7 +39,7 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, dispatchEdit, s
     const [frameWidth, setFrameWidth] = useState(DEFAULT_FRAME_WIDTH);
     const [frameSideMargin, setFrameSideMargin] = useState(0);
     const [frameTopPadding, setFrameTopPadding] = useState(10);
-    const [originalBBox, setOriginalBBox] = useState({ ...bbox });
+    const [originalBBox, setOriginalBBox] = useState<OriginalImageBBox | null>(bbox ? { ...bbox } : null);
     const [original, setOriginal] = useState<boolean>(false);
 
     // 2️⃣ Derived values (NO state, NO effect)
@@ -48,7 +48,7 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, dispatchEdit, s
 
     // 3️⃣ Derived frame position
     const finalOffsetY =
-        originalBBox.y1 * imgScale - frameTopPadding;
+        originalBBox ? originalBBox.y1 * imgScale - frameTopPadding : 0;
 
     const frame: Frame = {
         p1: { x: 0, y: finalOffsetY },
@@ -87,6 +87,35 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, dispatchEdit, s
         }
     }, [activeDlgIdx, bbox]);
 
+    // pass a temp bbox to debug controls
+    let default_bbox: OriginalImageBBox = {
+        x1: frame.p1.x,
+        y1: frame.p1.y,
+        x2: frame.p2.x,
+        y2: frame.p2.y
+    }
+
+    const updateY1 = (nextY1: number) => {
+        if (!originalBBox) return;
+
+        const clampedY1 = Math.max(0, Math.min(nextY1, maxFrameY1));
+
+        const newBbox: OriginalImageBBox = {
+            ...originalBBox,
+            y1: clampedY1,
+            y2: originalBBox.y2 + (clampedY1 - originalBBox.y1)
+        };
+
+        setOriginalBBox(newBbox);
+
+        dispatchEdit({
+            type: EditActionType.Dialogue_update,
+            imageIdx,
+            dlgIdx: activeDlgIdx,
+            updates: { original_bbox: newBbox }
+        });
+    };
+
 
     return (
         <div className="grid grid-cols-[1fr_1fr] gap-6 px-6">
@@ -105,8 +134,8 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, dispatchEdit, s
                 saveJson={saveJson}
 
                 imgViewPortProps={imgViewPortProps}
-                originalBBox={originalBBox}
-                setOriginalBBox={setOriginalBBox}
+                originalBBox={originalBBox ?? default_bbox}
+                updateY1={updateY1}
                 maxY1={maxFrameY1}
                 imageIdx={imageIdx}
                 activeDlgIdx={activeDlgIdx}
@@ -123,7 +152,16 @@ export function ImagePanPreview({ image, imageIdx, activeDlgIdx, dispatchEdit, s
                 imgScale={imgScale}
                 frame={frame}
                 sideMargin={frameSideMargin}
+                onWheelY={(deltaY) => {
+                    if (!originalBBox) return;
+
+                    // scale wheel movement into original image space
+                    const deltaInOriginal = deltaY / imgScale;
+
+                    updateY1(originalBBox.y1 + deltaInOriginal);
+                }}
             />
+
         </div>
     );
 

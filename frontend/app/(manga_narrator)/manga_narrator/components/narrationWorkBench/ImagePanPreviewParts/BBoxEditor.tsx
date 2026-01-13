@@ -5,7 +5,8 @@ import { DisplayValues } from "../../common/DisplayValues"
 
 interface BBoxEditorProps {
     originalBBox: OriginalImageBBox
-    setOriginalBBox: (v: OriginalImageBBox) => void
+    updateY1: (y1: number) => void
+
     maxY1: number
     imageIdx: number
     activeDlgIdx: number
@@ -16,39 +17,13 @@ interface BBoxEditorProps {
 
 export const BBoxEditor = ({
     originalBBox,
-    setOriginalBBox,
+    updateY1,
     maxY1,
     imageIdx,
     activeDlgIdx,
     dispatchEdit,
     onSave
 }: BBoxEditorProps) => {
-    // const update = (key: keyof BBox, value: number) => {
-    //     onChange({
-    //         ...bbox,
-    //         [key]: value,
-    //     });
-    // };
-
-    const update = (y1: number) => {
-
-        const newBbox = {
-            ...originalBBox,
-            y1: y1,
-            y2: originalBBox.y2 + (y1 - originalBBox.y1)
-        }
-        const edit: EditAction = {
-            dlgIdx: activeDlgIdx,
-            imageIdx: imageIdx,
-            type: EditActionType.Dialogue_update,
-            updates: {
-                original_bbox: newBbox
-            }
-        }
-        setOriginalBBox(newBbox)
-        dispatchEdit(edit)
-    }
-
 
     return (
         <div className="space-y-2 p-3 border rounded text-sm w-64">
@@ -66,7 +41,7 @@ export const BBoxEditor = ({
                 max={maxY1}
                 step={1}
                 bigStep={10}
-                onChange={(y1) => update(y1)}
+                onChange={(y1) => updateY1(y1)}
             />
 
             <DisplayValues

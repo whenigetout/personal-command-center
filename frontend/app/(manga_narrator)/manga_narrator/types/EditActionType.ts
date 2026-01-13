@@ -2,6 +2,7 @@ import { DialogueLine } from "@manganarrator/contracts"
 
 export const EditActionType = {
     Dialogue_update: "dialogue_update",
+    Dialogue_delete: "dialogue_delete"
 } as const
 
 export type EditActionType =
@@ -14,6 +15,12 @@ export type EditAction =
         imageIdx: number
         dlgIdx: number
         updates: Partial<DialogueLine>
+    }
+    | {
+        type: typeof EditActionType.Dialogue_delete
+        imageIdx: number
+        dlgIdx: number
+        updates: null
     }
 //   | {
 //       type: typeof EditActionType.DialogueText

@@ -1,4 +1,4 @@
-import { EditAction } from "../../types/EditActionType"
+import { EditAction, EditActionType } from "../../types/EditActionType"
 import { ImageDialogueLine } from "./ImageDialogueLine"
 import { OCRImage, MediaRef, Emotion } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
@@ -29,6 +29,39 @@ export const MangaImage = ({
     // for img pan preview
     const [activeDlgIdx, setActiveDlgIdx] = useState(0)
 
+    function nextActiveDlgIdx(
+        deletedIdx: number,
+        newLength: number
+    ): number {
+        if (newLength <= 0) return 0;
+
+        // If deleted last item, move left
+        if (deletedIdx >= newLength) {
+            return newLength - 1;
+        }
+
+        // Otherwise, same index now points to next item
+        return deletedIdx;
+    }
+
+
+    const handleDeleteDialogue = (dlgIdx: number) => {
+        const prevLength = image.dialogue_lines.length;
+
+        dispatchEdit({
+            type: EditActionType.Dialogue_delete,
+            imageIdx,
+            dlgIdx,
+            updates: null
+        })
+
+        const newLength = prevLength - 1;
+
+        setActiveDlgIdx(
+            nextActiveDlgIdx(dlgIdx, newLength)
+        );
+    }
+
 
     return (
 
@@ -47,7 +80,8 @@ export const MangaImage = ({
             </div>
 
             <div className="grid grid-cols-[1fr_1.5fr] gap-6 px-6" >
-                <div className="min-w-0">
+                {/* LEFT: scrolls */}
+                <div className="max-h-[calc(100vh-6rem)] overflow-y-auto min-w-0">
                     {image.dialogue_lines.map((dlgLine, dlgIdx) =>
 
                         <ImageDialogueLine
@@ -62,19 +96,24 @@ export const MangaImage = ({
                             dispatchEdit={dispatchEdit}
                             forceExpand={expandAll}
                             onDlgClick={setActiveDlgIdx}
+                            onDelete={handleDeleteDialogue}
+                            activeDlgIdx={activeDlgIdx}
                         />
 
                     )}
                 </div>
-                <div className="sticky top-4 flex items-start justify-center">
-                    <ImagePanPreview
-                        key={image.image_id}
-                        image={image}
-                        imageIdx={imageIdx}
-                        activeDlgIdx={activeDlgIdx}
-                        dispatchEdit={dispatchEdit}
-                        saveJson={saveJson}
-                    />
+                {/* RIGHT: sticks */}
+                <div className="flex justify-center">
+                    <div className="sticky top-4">
+                        <ImagePanPreview
+                            key={image.image_id}
+                            image={image}
+                            imageIdx={imageIdx}
+                            activeDlgIdx={activeDlgIdx}
+                            dispatchEdit={dispatchEdit}
+                            saveJson={saveJson}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

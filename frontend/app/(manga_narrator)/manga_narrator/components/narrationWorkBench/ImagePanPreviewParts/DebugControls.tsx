@@ -23,7 +23,7 @@ interface DebugControlsProps {
     imgViewPortProps: ImageViewportProps
 
     originalBBox: OriginalImageBBox
-    setOriginalBBox: (v: OriginalImageBBox) => void
+    updateY1: (y1: number) => void
     maxY1: number
 
     imageIdx: number
@@ -46,7 +46,7 @@ export const DebugControls = ({
     saveJson,
     imgViewPortProps,
     originalBBox,
-    setOriginalBBox,
+    updateY1,
     maxY1,
     imageIdx,
     activeDlgIdx,
@@ -146,7 +146,7 @@ export const DebugControls = ({
                 imageIdx={imageIdx}
                 onSave={saveJson}
                 originalBBox={originalBBox}
-                setOriginalBBox={setOriginalBBox}
+                updateY1={updateY1}
                 maxY1={maxY1}
             />
 

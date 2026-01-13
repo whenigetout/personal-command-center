@@ -1,4 +1,5 @@
 import { Point, Size, Frame } from "../../../types/geometry"
+import { useEffect, useRef } from "react"
 
 export interface ImageViewportProps {
     framSize: Size
@@ -7,6 +8,8 @@ export interface ImageViewportProps {
     imgScale: number
     frame: Frame
     sideMargin?: number
+
+    onWheelY?: (deltaY: number) => void
 }
 
 export const ImageViewport = ({
@@ -15,8 +18,27 @@ export const ImageViewport = ({
     imgSize,
     imgScale = 1,
     frame,
-    sideMargin = 0
+    sideMargin = 0,
+    onWheelY
 }: ImageViewportProps) => {
+
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el || !onWheelY) return;
+
+        const handleWheel = (e: WheelEvent) => {
+            e.preventDefault();       // ← THIS now works
+            onWheelY(e.deltaY);
+        };
+
+        el.addEventListener("wheel", handleWheel, { passive: false });
+
+        return () => {
+            el.removeEventListener("wheel", handleWheel);
+        };
+    }, [onWheelY]);
+
 
     const bgImg = `url(${imgUrl})`
     const bgRepeat = "no-repeat"
@@ -26,8 +48,10 @@ export const ImageViewport = ({
     return (
         <div
             style={{ width: framSize.w + 2 * sideMargin, height: framSize.h }}
-            className="rounded-lg overflow-hidden border-red-400"
+            className="rounded-lg overflow-hidden border-red-400 cursor-ns-resize"
+            ref={containerRef}
         >
+
             <div
                 className="w-full h-full"
                 style={{
