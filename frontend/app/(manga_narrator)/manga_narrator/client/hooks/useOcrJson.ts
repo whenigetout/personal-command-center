@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { fetchOcrJsonContents } from "../../server/fetchOcrJsonContents";
+import { fetchJsonContents } from "../../server/fetchJsonContents";
 import { applyEdit } from "../../utils/applyEdit/applyEdit";
 import { EditAction } from "../../types/EditActionType";
 import { fetchEmotionOptions } from "../../server/fetchEmotionOptions";
 import { saveCorrectedJson } from "../../server/saveCorrectedJson";
-import { MediaRef, OCRRun, Emotion, EMOTIONS, EmotionOptionsOutput } from "@manganarrator/contracts"
+import { MediaRef, OCRRun, Emotion, EMOTIONS, EmotionOptionsOutput, VideoPreview } from "@manganarrator/contracts"
 import { toast } from "../../components/common/ToastHost";
 import { EMOJI } from "../../types/EMOJI";
+import { saveVideoPreview } from "../../server/saveVideoPreview";
 
 // useOcrJson.ts
 export function useOcrJson(json_file: MediaRef | null) {
@@ -28,8 +29,18 @@ export function useOcrJson(json_file: MediaRef | null) {
     const saveJson = () => {
         if (!data) return
         saveCorrectedJson(data)
-            .then(() => toast(`${EMOJI.success} Saved successfully.`))
-            .catch(() => toast(`${EMOJI.warn} Failed to save json.`))
+            .then(() => toast(`${EMOJI.success} Saved updated json successfully.`))
+            .catch(() => toast(`${EMOJI.warn} Failed to save updated json.`))
+    }
+
+    const savePreview = () => {
+        if (!data) return
+        saveVideoPreview(data)
+            .then(() => toast(`${EMOJI.success} Saved preview successfully.`))
+            .catch((data) => {
+                console.log("error", data)
+                toast(`${EMOJI.warn} Failed to save preview json.`)
+            })
     }
 
     // runs once on load and on every render
@@ -42,8 +53,16 @@ export function useOcrJson(json_file: MediaRef | null) {
         setLoading(true)
         setError(null)
 
-        fetchOcrJsonContents(json_file)
-            .then(setData)
+        function isOCRRun(data: OCRRun | VideoPreview): data is OCRRun {
+            return "ocr_json_file" in data;
+        }
+
+        fetchJsonContents(json_file)
+            .then((data) => {
+                if (isOCRRun(data)) {
+                    setData(data)
+                }
+            })
             .catch(() => setError("Failed to load OCR JSON"))
             .finally(() => setLoading(false));
     }, [json_file]);
@@ -67,6 +86,7 @@ export function useOcrJson(json_file: MediaRef | null) {
         emotionOptions,
         dispatchEdit,
         saveJson,
+        savePreview,
         loading,
         error
     };

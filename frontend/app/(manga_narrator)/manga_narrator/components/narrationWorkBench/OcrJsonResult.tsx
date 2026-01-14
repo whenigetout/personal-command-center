@@ -9,13 +9,14 @@ interface OcrJsonResultProps {
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
-
+    savePreview: () => void
 }
 export const OcrJsonResult = ({
     jsonResponse,
     emotionOptions,
     dispatchEdit,
-    saveJson
+    saveJson,
+    savePreview
 }: OcrJsonResultProps) => {
 
 
@@ -35,6 +36,7 @@ export const OcrJsonResult = ({
                     emotionOptions={emotionOptions}
                     dispatchEdit={dispatchEdit}
                     saveJson={saveJson}
+                    savePreview={savePreview}
                 />
             )}
         </div>

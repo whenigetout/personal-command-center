@@ -7,14 +7,15 @@ interface NarrationWorkbenchClientProps {
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
-
+    savePreview: () => void
 }
 
 export const NarrationWorkbenchClient = ({
     ocrJsonData,
     emotionOptions,
     dispatchEdit,
-    saveJson
+    saveJson,
+    savePreview
 }: NarrationWorkbenchClientProps) => {
 
     return (
@@ -25,6 +26,7 @@ export const NarrationWorkbenchClient = ({
                 emotionOptions={emotionOptions}
                 dispatchEdit={dispatchEdit}
                 saveJson={saveJson}
+                savePreview={savePreview}
             />
         </div>
     )

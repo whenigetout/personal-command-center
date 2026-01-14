@@ -4,6 +4,8 @@ import { OCRImage, MediaRef, Emotion } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
 import { fileNameFromMediaRef } from "../../utils/helpers"
 import { ImagePanPreview } from "./ImagePanPreview"
+import { ImageSegmentPreview } from "./ImageSegmentPreview"
+import { useVideoPreviewJson } from "../../client/hooks/useVideoPreviewJson"
 
 interface MangaImageProps {
     run_id: string
@@ -13,6 +15,7 @@ interface MangaImageProps {
     emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
+    savePreview: () => void
 }
 export const MangaImage = ({
     run_id,
@@ -21,8 +24,23 @@ export const MangaImage = ({
     imageIdx,
     emotionOptions,
     dispatchEdit,
-    saveJson
+    saveJson,
+    savePreview
 }: MangaImageProps) => {
+
+    const {
+        data,
+        imgPrwById,
+        loading,
+        error
+    } = useVideoPreviewJson(json_file)
+
+    type PreviewMode = "bbox" | "video";
+
+    const [previewMode, setPreviewMode] = useState<PreviewMode>("bbox");
+
+    // index into the flattened segment preview list
+    const [activePreviewIdx, setActivePreviewIdx] = useState(0);
 
     // for expand/collapse logic
     const [expandAll, setExpandAll] = useState<boolean>(false);
@@ -43,7 +61,6 @@ export const MangaImage = ({
         // Otherwise, same index now points to next item
         return deletedIdx;
     }
-
 
     const handleDeleteDialogue = (dlgIdx: number) => {
         const prevLength = image.dialogue_lines.length;
@@ -105,14 +122,57 @@ export const MangaImage = ({
                 {/* RIGHT: sticks */}
                 <div className="flex justify-center">
                     <div className="sticky top-4">
-                        <ImagePanPreview
-                            key={image.image_id}
-                            image={image}
-                            imageIdx={imageIdx}
-                            activeDlgIdx={activeDlgIdx}
-                            dispatchEdit={dispatchEdit}
-                            saveJson={saveJson}
-                        />
+                        <div className="flex gap-2 mb-2">
+                            {
+                                data &&
+                                (<button
+                                    onClick={() => setPreviewMode("bbox")}
+                                    className={`text-xs px-2 py-1 rounded ${previewMode === "bbox" ? "bg-zinc-700" : "bg-zinc-800"
+                                        }`}
+                                >
+                                    {
+                                        previewMode === "bbox" ?
+                                            "Switch to Video Preview" :
+                                            "Switch to BBox Editor"
+                                    }
+                                </button>)
+                            }
+
+                        </div>
+
+                        <div className="flex gap-2 mb-2">
+                            <button
+                                onClick={() => savePreview()}
+                                className={`text-xs px-2 py-1 rounded ${previewMode === "bbox" ? "bg-zinc-700" : "bg-zinc-800"
+                                    }`}
+                            >
+                                {
+                                    data ?
+                                        "Update Preview" :
+                                        "Save Preview"
+                                }
+                            </button>
+
+                        </div>
+
+                        {previewMode === "bbox" ? (
+                            <ImagePanPreview
+                                key={image.image_id}
+                                image={image}
+                                imageIdx={imageIdx}
+                                activeDlgIdx={activeDlgIdx}
+                                dispatchEdit={dispatchEdit}
+                                saveJson={saveJson}
+                            />
+                        ) : (imgPrwById && imgPrwById.has(image.image_id) &&
+                            <ImageSegmentPreview
+                                imagePreview={imgPrwById.get(image.image_id)!}
+                                activeIdx={activePreviewIdx}
+                                onPrev={() => setActivePreviewIdx(i => i - 1)}
+                                onNext={() => setActivePreviewIdx(i => i + 1)}
+                            />
+                        )}
+
                     </div>
                 </div>
             </div>

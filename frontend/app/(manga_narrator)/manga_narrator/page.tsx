@@ -22,6 +22,7 @@ export default function MangaNarratorPage() {
         emotionOptions,
         dispatchEdit,
         saveJson,
+        savePreview,
         loading,
         error
     } = useOcrJson(selectedOcrJson)
@@ -51,6 +52,7 @@ export default function MangaNarratorPage() {
                     emotionOptions={emotionOptions}
                     dispatchEdit={dispatchEdit}
                     saveJson={saveJson}
+                    savePreview={savePreview}
                 />}
                 {/*
                 <VideoPreviewClient

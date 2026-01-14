@@ -13,6 +13,7 @@ from manga_narrator.contracts.endpoint_contracts import (
     LatestTTSResponse
 )
 import manga_narrator.utils as utils
+import mn_contracts.video as v
 from pydantic import ValidationError
 from typing import List
 
@@ -82,15 +83,25 @@ def manga_json_file_view(request) -> JsonResponse:
             path=request.GET.get("path", "").strip(),
         )
 
+        kind=request.GET.get("kind", "").strip()
+
         # Restrict to OUTPUTS dir 
         base_dir = media_ref.namespace_path(Path(settings.MEDIA_ROOT))
-        target_path = media_ref.resolve(Path(settings.MEDIA_ROOT))
+        ocr_json_path = media_ref.resolve(Path(settings.MEDIA_ROOT))
+
+        target_path = utils.resolve_json_artifact(
+            ocr_json_path=ocr_json_path,
+            kind=kind
+        )
 
         if not utils.is_path_inside(target_path, base_dir) or media_ref.namespace != OUTPUTSNAMESPACE:
             raise ValueError("Invalid path param passed.")
 
         if not target_path.exists():
-            raise ValueError("Path doesn't exist.")
+            return JsonResponse({
+                "success": False,
+                "error": "Preview doesn't exist yet."
+            })
         
         if not target_path.is_file() or target_path.suffix.lower() != ".json":
             raise ValueError("Path is not a json file.")
@@ -98,9 +109,13 @@ def manga_json_file_view(request) -> JsonResponse:
         # 1️⃣ DOMAIN: parse + validate raw OCR json
         with open(target_path, "r", encoding="utf-8") as f:
             raw = json.load(f)
-            ocr_run = ocr.OCRRun.model_validate(raw)
 
-        return JsonResponse(ocr_run.model_dump(), safe=False)
+        if kind == "video_preview":
+            obj = v.VideoPreview.model_validate(raw)
+        else:
+            obj = ocr.OCRRun.model_validate(raw)
+
+        return JsonResponse(obj.model_dump(), safe=False)
 
     except Exception as e:
         print(f"❌ Failed to load OCR JSON {target_path}: {e}")

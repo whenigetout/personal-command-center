@@ -20,3 +20,22 @@ def build_media_Ref(namespace: str, path: str) -> d.MediaRef:
         return media_ref
     except ValidationError as e:
         raise ValueError("Invalid path passed")
+    
+def resolve_json_artifact(
+    ocr_json_path: Path,
+    kind: str,
+) -> Path:
+    """
+    Given an OCR JSON path, resolve the derived artifact path.
+    """
+    if not kind or kind == "ocr":
+        return ocr_json_path
+
+    if kind == "video_preview":
+        return (
+            ocr_json_path.parent
+            / "video_preview"
+            / "preview.json"
+        )
+
+    raise ValueError(f"Unknown json kind: {kind}")

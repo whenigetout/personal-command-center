@@ -64,9 +64,13 @@ MIDDLEWARE = [
     *MIDDLEWARE,  # keep existing
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3100",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3100",
+#     "http://localhost:4000",
+#     "*"
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'corecenter.urls'
 

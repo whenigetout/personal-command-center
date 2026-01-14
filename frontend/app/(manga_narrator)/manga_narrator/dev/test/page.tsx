@@ -1,5 +1,5 @@
 // app/dev/ocr-test/page.tsx
-import { fetchOcrJsonContents } from "../../server/fetchOcrJsonContents";
+import { fetchOcrJsonContents } from "../../server/fetchJsonContents";
 import Link from "next/link";
 
 export default async function Page() {
