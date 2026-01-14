@@ -7,3 +7,14 @@ export const resolveMediaRef = (mediaRef: MediaRef) =>
 
 export const fileNameFromMediaRef = (mediaRef: MediaRef) =>
     `${mediaRef.path.split('/').pop()}`
+
+export const safeFloat = (
+    value: unknown,
+    fallback: number
+): number => {
+    const n = typeof value === "number"
+        ? value
+        : parseFloat(String(value));
+
+    return Number.isFinite(n) ? n : fallback;
+}

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react"
 import { TTSInput, TTSOutput, MediaRef, MediaNamespace } from "@manganarrator/contracts"
-import { fetchTTSResult } from "../../server/fetchTTSResult"
 import { fetchLatestTTSAudio } from "../../server/fetchLatestTTSAudio"
 
-export const useTTS = (
+export const useTTSLine = (
     run_id: string,
     dlg_id: number,
     img_file: MediaRef
@@ -17,27 +16,6 @@ export const useTTS = (
     const [exg, setExg] = useState<string>("")
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    const generateTTS = async (req: TTSInput) => {
-
-        setLoading(true)
-        setError(null)
-
-        fetchTTSResult(req)
-            .then((data: TTSOutput) => {
-                setAudioRef(data.audio_ref)
-            })
-            .catch((err) => {
-                console.error("TTS error:", err);
-
-                if (err.status === 422) {
-                    setError(`Validation error: ${err.message}`);
-                } else {
-                    setError(err.message || "Error generating TTS");
-                }
-            })
-            .finally(() => setLoading(false))
-    }
 
     // Load latest version audio file if exists, only ONCE on mount
     useEffect(() => {
@@ -62,7 +40,6 @@ export const useTTS = (
     }, [])
 
     return {
-        generateTTS,
         audioRef,
         useCustom,
         setUseCustom,

@@ -1,5 +1,5 @@
 const MEDIA_ROOT = process.env.NEXT_PUBLIC_MEDIA_ROOT as string
-import { MediaRef } from "@/app/manga_narrator/types/manga_narrator_django_api_types"
+import { MediaRef } from "@manganarrator/contracts"
 
 interface GenerateTTSButtonProps {
     audioRef: MediaRef
