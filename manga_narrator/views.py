@@ -16,8 +16,11 @@ import manga_narrator.utils as utils
 import mn_contracts.video as v
 from pydantic import ValidationError
 from typing import List
+from mn_contracts.tts import save_versioned_media, get_next_version
+from mn_contracts.common import log_exception
 
 INPUTS_NAMESPACE, OUTPUTSNAMESPACE = settings.MEDIA_NAMESPACE_KEYS
+MEDIA_ROOT = settings.MEDIA_ROOT
 
 # views.py
 @require_GET
@@ -312,4 +315,53 @@ def save_augmented_ocr_json(request):
 
     except Exception as e:
         print(f"Error saving augmented OCR JSON: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+@require_POST
+def save_recorded_audio(request):
+    """
+    Save user-recorded audio and associate it with a dialogue line.
+    """
+    try:
+        run_id = request.POST.get("run_id")
+        dialogue_id = int(request.POST.get("dialogue_id"))
+
+        image_ref = ocr.MediaRef.model_validate_json(
+            request.POST.get("image_ref")
+        )
+
+        audio_file = request.FILES.get("audio")
+        if not audio_file:
+            return JsonResponse({"error": "No audio uploaded"}, status=400)
+
+        audio_bytes = audio_file.read()
+
+        audio_ref = save_versioned_media(
+            media_root=Path(settings.MEDIA_ROOT),
+            media_namespace=ocr.MediaNamespace.OUTPUTS,
+            run_id=run_id,
+            image_ref=image_ref,
+            dialogue_id=dialogue_id,
+            ext="wav",          # or webm for now
+            content=audio_bytes,
+            suffix="recorded"
+        )
+
+        audio_path = audio_ref.resolve(MEDIA_ROOT)
+
+        utils.convert_to_wav_ffmpeg(
+            raw_bytes=audio_bytes,
+            out_path=audio_path,
+            sample_rate=22050,
+            channels=1
+        )
+
+        return JsonResponse({
+            "status": "success",
+            "audio_ref": audio_ref.model_dump()
+        })
+
+    except Exception as e:
+        log_exception("save_recorded_audio")
         return JsonResponse({"error": str(e)}, status=500)

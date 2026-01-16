@@ -41,6 +41,7 @@ export const useTTSLine = (
 
     return {
         audioRef,
+        setAudioRef,
         useCustom,
         setUseCustom,
         cfg,

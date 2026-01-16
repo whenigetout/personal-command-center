@@ -126,7 +126,11 @@ export const MangaImage = ({
                             {
                                 data &&
                                 (<button
-                                    onClick={() => setPreviewMode("bbox")}
+                                    onClick={() => setPreviewMode(
+                                        previewMode === "bbox" ?
+                                            "video" :
+                                            "bbox"
+                                    )}
                                     className={`text-xs px-2 py-1 rounded ${previewMode === "bbox" ? "bg-zinc-700" : "bg-zinc-800"
                                         }`}
                                 >

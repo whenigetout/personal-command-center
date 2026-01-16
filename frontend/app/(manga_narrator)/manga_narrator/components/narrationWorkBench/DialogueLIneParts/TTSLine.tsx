@@ -8,6 +8,8 @@ import { getTTSLineState, updateTTSLineState } from "../../../shared/ttsLineStat
 import { useState, useEffect } from "react"
 import { buildTTSInput } from "../../../utils/buildTTSInput"
 import { safeFloat } from "../../../utils/helpers"
+import { AudioRecorder } from "./TTSLineParts/AudioRecorder"
+import { saveRecordedAudio } from "../../../server/save_recorded_audio"
 
 interface TTSLineProps {
     run_id: string
@@ -24,6 +26,33 @@ export const TTSLine = ({
     dlgLine,
     emotionOptions
 }: TTSLineProps) => {
+
+    const handleSaveRecordedAudio = async (blob: Blob | null) => {
+        if (!blob) return
+        try {
+            const res = await saveRecordedAudio({
+                run_id,
+                dialogue_id: dlgLine.id,
+                image_ref,
+                media_type: "audio",
+                ext: "wav",
+                suffix: "recorded",
+                source: "mic",
+                audio_blob: blob,
+            });
+
+            setAudioRef(res.audio_ref)
+
+            // IMPORTANT:
+            // You do NOT need to manually update audioRef.
+            // Your existing useTTSLine hook already:
+            //   - fetches latest audio
+            //   - picks highest version
+            // So just let it revalidate naturally.
+        } catch (err) {
+            console.error("Failed to save recorded audio", err);
+        }
+    };
 
     const persisted = getTTSLineState(dlgLine.id)
 
@@ -46,6 +75,7 @@ export const TTSLine = ({
 
     const {
         audioRef,
+        setAudioRef,
         useCustom,
         setUseCustom,
         cfg,
@@ -93,6 +123,13 @@ export const TTSLine = ({
                     isGenerating={false}
                     onGenerateTTS={handleGenerateTTS}
                 />
+                <AudioRecorder
+                    run_id={run_id}
+                    dlgLine={dlgLine}
+                    image_ref={image_ref}
+                    onSave={handleSaveRecordedAudio}
+                />
+
             </div>
 
             <Message
