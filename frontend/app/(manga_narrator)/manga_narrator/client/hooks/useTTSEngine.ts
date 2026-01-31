@@ -1,38 +1,21 @@
 // useTTSEngine.ts
 import { fetchTTSResult } from "../../server/fetchTTSResult"
-import { TTSInput } from "@manganarrator/contracts"
+import { TTSInput, TTSOutput } from "@manganarrator/contracts"
 
 export function useTTSEngine() {
     const generateOne = async (input: TTSInput) => {
-        await fetchTTSResult(input)
+        return fetchTTSResult(input)
     }
 
-    const generateMany = async (inputs: TTSInput[]) => {
+    const generateMany = async (
+        inputs: TTSInput[]
+    ): Promise<TTSOutput[]> => {
+        const results: TTSOutput[] = []
         for (const input of inputs) {
-            await fetchTTSResult(input)
+            results.push(await fetchTTSResult(input))
         }
+        return results
     }
 
     return { generateOne, generateMany }
 }
-
-// const generateTTS = async (req: TTSInput) => {
-
-//     setLoading(true)
-//     setError(null)
-
-//     fetchTTSResult(req)
-//         .then((data: TTSOutput) => {
-//             setAudioRef(data.audio_ref)
-//         })
-//         .catch((err) => {
-//             console.error("TTS error:", err);
-
-//             if (err.status === 422) {
-//                 setError(`Validation error: ${err.message}`);
-//             } else {
-//                 setError(err.message || "Error generating TTS");
-//             }
-//         })
-//         .finally(() => setLoading(false))
-// }

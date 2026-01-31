@@ -19,7 +19,6 @@ export default function MangaNarratorPage() {
 
     const {
         data: ocrJsonData,
-        emotionOptions,
         dispatchEdit,
         saveJson,
         savePreview,
@@ -49,7 +48,6 @@ export default function MangaNarratorPage() {
             <div className="p-6">
                 {ocrJsonData && <NarrationWorkbenchClient
                     ocrJsonData={ocrJsonData}
-                    emotionOptions={emotionOptions}
                     dispatchEdit={dispatchEdit}
                     saveJson={saveJson}
                     savePreview={savePreview}

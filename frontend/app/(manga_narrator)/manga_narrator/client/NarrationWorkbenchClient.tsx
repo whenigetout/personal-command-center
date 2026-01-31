@@ -1,10 +1,9 @@
 import { OcrJsonResult } from "../components/narrationWorkBench/OcrJsonResult"
-import { OCRRun, Emotion } from "@manganarrator/contracts"
+import { OCRRun } from "@manganarrator/contracts"
 import { EditAction } from "../types/EditActionType"
 
 interface NarrationWorkbenchClientProps {
     ocrJsonData: OCRRun
-    emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
     savePreview: () => void
@@ -12,7 +11,6 @@ interface NarrationWorkbenchClientProps {
 
 export const NarrationWorkbenchClient = ({
     ocrJsonData,
-    emotionOptions,
     dispatchEdit,
     saveJson,
     savePreview
@@ -23,7 +21,6 @@ export const NarrationWorkbenchClient = ({
             NarrationWorkbenchClient
             <OcrJsonResult
                 jsonResponse={ocrJsonData}
-                emotionOptions={emotionOptions}
                 dispatchEdit={dispatchEdit}
                 saveJson={saveJson}
                 savePreview={savePreview}

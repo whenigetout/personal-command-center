@@ -1,6 +1,6 @@
 import { EditAction, EditActionType } from "../../types/EditActionType"
 import { ImageDialogueLine } from "./ImageDialogueLine"
-import { OCRImage, MediaRef, Emotion } from "@manganarrator/contracts"
+import { OCRImage, MediaRef } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
 import { fileNameFromMediaRef } from "../../utils/helpers"
 import { ImagePanPreview } from "./ImagePanPreview"
@@ -12,7 +12,6 @@ interface MangaImageProps {
     json_file: MediaRef
     image: OCRImage
     imageIdx: number
-    emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
     savePreview: () => void
@@ -22,7 +21,6 @@ export const MangaImage = ({
     json_file,
     image,
     imageIdx,
-    emotionOptions,
     dispatchEdit,
     saveJson,
     savePreview
@@ -109,7 +107,6 @@ export const MangaImage = ({
                             dlgLine={dlgLine}
                             imageIdx={imageIdx}
                             dlgIdx={dlgIdx}
-                            emotionOptions={emotionOptions}
                             dispatchEdit={dispatchEdit}
                             forceExpand={expandAll}
                             onDlgClick={setActiveDlgIdx}

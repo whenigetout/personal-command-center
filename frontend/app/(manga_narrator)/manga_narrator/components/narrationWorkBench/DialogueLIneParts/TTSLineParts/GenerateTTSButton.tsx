@@ -28,7 +28,7 @@ export const GenerateTTSButton = ({
                         className="bg-purple-700 text-white text-xs px-2 py-1 rounded hover:bg-purple-800"
                         disabled={loading || isGenerating}
                     >
-                        {loading ? "🔃 Regenerating..." : "🔁 Regenerate"}
+                        {loading || isGenerating ? "🔃 Regenerating..." : "🔁 Regenerate"}
                     </button>
                 </>
             ) : (
@@ -37,7 +37,7 @@ export const GenerateTTSButton = ({
                     className="bg-purple-600 hover:bg-purple-500 text-white"
                     disabled={loading || isGenerating}
                 >
-                    {loading ? "🔃 Generating..." : "🎙️ Generate"}
+                    {loading || isGenerating ? "🔃 Generating..." : "🎙️ Generate"}
                 </button>
             )}
         </div>

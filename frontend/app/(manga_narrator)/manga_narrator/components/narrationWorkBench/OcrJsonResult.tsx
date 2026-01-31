@@ -1,6 +1,6 @@
 import { MangaImage } from "./MangaImage"
 import { EditAction } from "../../types/EditActionType"
-import { OCRRun, Emotion } from "@manganarrator/contracts"
+import { OCRRun } from "@manganarrator/contracts"
 import { useEffect, useState } from "react"
 import { useTTSEngine } from "../../client/hooks/useTTSEngine"
 import { buildTTSInput } from "../../utils/buildTTSInput"
@@ -9,14 +9,12 @@ import { getTTSLineState } from "../../shared/ttsLineStateStore"
 
 interface OcrJsonResultProps {
     jsonResponse: OCRRun
-    emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     saveJson: () => void
     savePreview: () => void
 }
 export const OcrJsonResult = ({
     jsonResponse,
-    emotionOptions,
     dispatchEdit,
     saveJson,
     savePreview
@@ -61,7 +59,6 @@ export const OcrJsonResult = ({
                         safeFloat,
                         ttslineState.exg,
                         ttslineState.cfg,
-                        emotionOptions,
                         img.image_info.image_ref,
                         ttslineState.useCustom,
                         jsonResponse.run_id
@@ -110,7 +107,6 @@ export const OcrJsonResult = ({
                     json_file={jsonResponse.ocr_json_file}
                     image={image}
                     imageIdx={imageIdx}
-                    emotionOptions={emotionOptions}
                     dispatchEdit={dispatchEdit}
                     saveJson={saveJson}
                     savePreview={savePreview}

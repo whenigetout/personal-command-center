@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { fetchJsonContents } from "../../server/fetchJsonContents";
 import { applyEdit } from "../../utils/applyEdit/applyEdit";
 import { EditAction } from "../../types/EditActionType";
-import { fetchEmotionOptions } from "../../server/fetchEmotionOptions";
 import { saveCorrectedJson } from "../../server/saveCorrectedJson";
-import { MediaRef, OCRRun, Emotion, EMOTIONS, EmotionOptionsOutput, VideoPreview } from "@manganarrator/contracts"
+import { MediaRef, OCRRun, EmotionOptionsOutput, VideoPreview } from "@manganarrator/contracts"
 import { toast } from "../../components/common/ToastHost";
 import { EMOJI } from "../../types/EMOJI";
 import { saveVideoPreview } from "../../server/saveVideoPreview";
@@ -12,7 +11,6 @@ import { saveVideoPreview } from "../../server/saveVideoPreview";
 // useOcrJson.ts
 export function useOcrJson(json_file: MediaRef | null) {
     const [data, setData] = useState<OCRRun | null>(null);
-    const [emotionOptions, setEmotionOptions] = useState<Emotion[]>([])
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -67,23 +65,8 @@ export function useOcrJson(json_file: MediaRef | null) {
             .finally(() => setLoading(false));
     }, [json_file]);
 
-    // Load emotion options for the emotions DDL
-    useEffect(() => {
-        setLoading(true)
-        setError(null)
-
-        fetchEmotionOptions()
-            .then((data: EmotionOptionsOutput) => {
-                setEmotionOptions(data.emotionOptions)
-            })
-            .catch(() => setError("Failed to load Emotion Options")
-            )
-            .finally(() => setLoading(false));
-    }, []);
-
     return {
         data,
-        emotionOptions,
         dispatchEdit,
         saveJson,
         savePreview,

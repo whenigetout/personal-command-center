@@ -1,6 +1,6 @@
 import { useTTSLine } from "../../../client/hooks/useTTSLine"
 import { useTTSEngine } from "../../../client/hooks/useTTSEngine"
-import { GENDERS, TTSInput, Gender, Emotion, EmotionParams, Speaker, OCRRun, MediaRef, DialogueLine } from "@manganarrator/contracts"
+import { TTSInput, EmotionParams, OCRRun, MediaRef, DialogueLine } from "@manganarrator/contracts"
 import { GenerateTTSButton } from "./TTSLineParts/GenerateTTSButton"
 import { Message } from "../../common/Message"
 import { CustomEmotionParams } from "./TTSLineParts/CustomEmotionParams"
@@ -16,15 +16,13 @@ interface TTSLineProps {
     json_file: MediaRef
     image_ref: MediaRef
     dlgLine: DialogueLine
-    emotionOptions: Emotion[]
 }
 
 export const TTSLine = ({
     run_id,
     json_file,
     image_ref,
-    dlgLine,
-    emotionOptions
+    dlgLine
 }: TTSLineProps) => {
 
     const handleSaveRecordedAudio = async (blob: Blob | null) => {
@@ -60,6 +58,8 @@ export const TTSLine = ({
     const [persistedExg, setPersistedExg] = useState(persisted.exg)
     const [persistedUseCustom, setPersistedUseCustom] = useState(persisted.useCustom)
 
+    const [isGeneratingTTS, setIsGeneratingTTS] = useState<boolean>(false)
+
     useEffect(() => {
         updateTTSLineState(dlgLine.id, {
             cfg: persistedCfg,
@@ -91,17 +91,24 @@ export const TTSLine = ({
 
     const handleGenerateTTS = async () => {
 
+        setIsGeneratingTTS(true)
+
         const req = buildTTSInput(
             dlgLine,
             safeFloat,
-            persistedExg,
-            persistedCfg,
-            emotionOptions,
+            exg,
+            cfg,
             image_ref,
-            persistedUseCustom,
+            useCustom,
             run_id
         )
-        generateOne(req);
+
+        generateOne(req)
+            .then(data => setAudioRef(data.audio_ref))
+            .catch()
+            .finally(() => setIsGeneratingTTS(false))
+
+
     }
 
     return (
@@ -120,7 +127,7 @@ export const TTSLine = ({
                 <GenerateTTSButton
                     audioRef={audioRef}
                     loading={loading}
-                    isGenerating={false}
+                    isGenerating={isGeneratingTTS}
                     onGenerateTTS={handleGenerateTTS}
                 />
                 <AudioRecorder

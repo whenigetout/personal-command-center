@@ -2,11 +2,11 @@ import {
     DialogueText,
     EmotionDDL,
     GenderDDL,
-    Speaker,
+    SpeakerDDL,
     TTSLine
 } from "./DialogueLineParts"
 import { EditAction } from "../../types/EditActionType"
-import { MediaRef, Emotion, DialogueLine } from "@manganarrator/contracts"
+import { MediaRef, DialogueLine } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
 import clsx from "clsx"
 import { text } from "node:stream/consumers"
@@ -18,7 +18,6 @@ interface ImageDialogueLineProps {
     dlgLine: DialogueLine
     imageIdx: number
     dlgIdx: number
-    emotionOptions: Emotion[]
     dispatchEdit: (action: EditAction) => void
     forceExpand: boolean
     onDlgClick: (idx: number) => void
@@ -33,7 +32,6 @@ export const ImageDialogueLine = ({
     dlgLine,
     imageIdx,
     dlgIdx,
-    emotionOptions,
     dispatchEdit,
     forceExpand,
     onDlgClick,
@@ -105,23 +103,26 @@ export const ImageDialogueLine = ({
             {expanded && <>
                 <p> ID: {dlgLine.id}</p>
                 <div className="flex flex-wrap gap-3 text-sm">
-                    <Speaker
-                        speaker={dlgLine.speaker}
-                        imageIdx={imageIdx}
-                        dlgIdx={dlgIdx}
-                        dispatchEdit={dispatchEdit}
-                    />
                     <GenderDDL
                         gender={dlgLine.gender}
                         imageIdx={imageIdx}
                         dlgIdx={dlgIdx}
                         dispatchEdit={dispatchEdit}
                     />
-                    <EmotionDDL
-                        emotion={dlgLine.emotion}
+                    <SpeakerDDL
+                        speaker={dlgLine.speaker}
+                        gender={dlgLine.gender}
                         imageIdx={imageIdx}
                         dlgIdx={dlgIdx}
-                        emotionOptions={emotionOptions}
+                        dispatchEdit={dispatchEdit}
+                    />
+
+                    <EmotionDDL
+                        emotion={dlgLine.emotion}
+                        gender={dlgLine.gender}
+                        speaker={dlgLine.speaker}
+                        imageIdx={imageIdx}
+                        dlgIdx={dlgIdx}
                         dispatchEdit={dispatchEdit}
                     />
                     <DialogueText
@@ -136,7 +137,6 @@ export const ImageDialogueLine = ({
                     json_file={json_file}
                     image_ref={image_ref}
                     dlgLine={dlgLine}
-                    emotionOptions={emotionOptions}
                 />
             </>}
 

@@ -1,32 +1,30 @@
 import { EditAction, EditActionType } from "../../../types/EditActionType"
-import { getEmotionDropdown } from "../../../types/ttsDropdowns"
+import { getSpeakerDropdown } from "../../../types/ttsDropdowns"
 import clsx from "clsx"
 
-interface EmotionDDLProps {
+interface SpeakerDDLProps {
     speaker: string
     gender: string
-    emotion: string
     imageIdx: number
     dlgIdx: number
     dispatchEdit: (action: EditAction) => void
 }
-
-export const EmotionDDL = ({
+export const SpeakerDDL = ({
     speaker,
     gender,
-    emotion,
     imageIdx,
     dlgIdx,
     dispatchEdit
-}: EmotionDDLProps) => {
-    const { options, selected } = getEmotionDropdown(gender.toLowerCase().trim(), speaker.toLowerCase().trim(), emotion.toLowerCase().trim())
+}: SpeakerDDLProps) => {
+    const { options, selected } = getSpeakerDropdown(gender.toLowerCase().trim(), speaker.toLowerCase().trim())
     const selectedOption = options.find(o => o.value === selected)
     const isUnknownSelected = selectedOption?.isUnknown
 
     return (
+
         <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-300">
-                Emotion
+                Speaker
             </label>
 
             <select
@@ -44,7 +42,7 @@ export const EmotionDDL = ({
                         type: EditActionType.Dialogue_update,
                         imageIdx,
                         dlgIdx,
-                        updates: { emotion: e.target.value }
+                        updates: { speaker: e.target.value }
                     })
                 }
             >
@@ -63,9 +61,10 @@ export const EmotionDDL = ({
 
             {isUnknownSelected && (
                 <div className="text-xs text-red-400">
-                    OCR detected an unknown emotion
+                    OCR detected an unknown speaker
                 </div>
             )}
         </div>
+
     )
 }
