@@ -4,7 +4,7 @@ import {
     GenderDDL,
     SpeakerDDL,
     TTSLine
-} from "./DialogueLineParts"
+} from "./DialogueLIneParts"
 import { EditAction } from "../../types/EditActionType"
 import { MediaRef, DialogueLine } from "@manganarrator/contracts"
 import { useState, useEffect } from "react"
