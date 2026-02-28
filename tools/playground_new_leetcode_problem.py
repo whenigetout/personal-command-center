@@ -25,6 +25,9 @@ SOLUTION_TEMPLATE = """# Problem: {title}
 # URL: {url}
 # Difficulty: {diff}
 # Tags: {tags}
+# Time Complexity: 
+# Space Complexity: 
+# Notes: 
 
 from typing import List, Optional
 
